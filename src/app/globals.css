@@ -1,0 +1,44 @@
+@import "tailwindcss";
+
+@theme inline {
+  --color-ledger-bg: #10151c;
+  --color-ledger-surface: #1a212b;
+  --color-ledger-surface-2: #212a36;
+  --color-ledger-line: #2a3441;
+  --color-ledger-text: #e7edf3;
+  --color-ledger-muted: #8b96a5;
+  --color-ledger-gold: #c9a227;
+  --color-ledger-gold-soft: #e0c168;
+  --color-ledger-slate: #6f93b8;
+  --color-ledger-slate-soft: #8fb0d1;
+
+  --font-display: var(--font-display);
+  --font-mono: var(--font-mono);
+  --font-body: var(--font-body);
+}
+
+html,
+body {
+  height: 100%;
+}
+
+body {
+  background-color: var(--color-ledger-bg);
+  background-image: repeating-linear-gradient(
+    to bottom,
+    transparent,
+    transparent 35px,
+    rgba(255, 255, 255, 0.025) 35px,
+    rgba(255, 255, 255, 0.025) 36px
+  );
+}
+
+::selection {
+  background-color: var(--color-ledger-gold);
+  color: #10151c;
+}
+
+.tabular {
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum" 1;
+}
