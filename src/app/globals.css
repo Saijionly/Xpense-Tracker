@@ -1,6 +1,6 @@
 @import "tailwindcss";
 
-@theme inline {
+@theme {
   --color-ledger-bg: #10151c;
   --color-ledger-surface: #1a212b;
   --color-ledger-surface-2: #212a36;
