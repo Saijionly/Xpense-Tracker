@@ -19,8 +19,8 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "Ledger — Personal Finance Tracker",
-  description: "A simple, ledger-inspired personal finance tracker.",
+   title: "Xpense — Your Online Tracker Buddy",
+   description: "A simple, friendly personal finance tracker.",
 };
 
 export default function RootLayout({

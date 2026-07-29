@@ -1,5 +1,4 @@
 "use client";
-
 import { useMemo } from "react";
 import { useTransactions } from "@/lib/useTransactions";
 import { SummaryCard } from "@/components/SummaryCard";
@@ -8,10 +7,8 @@ import { TransactionList } from "@/components/TransactionList";
 import { CategoryChart } from "@/components/CategoryChart";
 import { UserMenu } from "@/components/UserMenu";
 import { Wallet, TrendingUp, TrendingDown } from "lucide-react";
-
 export default function Home() {
   const { transactions, addTransaction, deleteTransaction, loaded } = useTransactions();
-
   const { income, expenses, balance } = useMemo(() => {
     const income = transactions
       .filter((t) => t.type === "income")
@@ -21,20 +18,21 @@ export default function Home() {
       .reduce((sum, t) => sum + t.amount, 0);
     return { income, expenses, balance: income - expenses };
   }, [transactions]);
-
   if (!loaded) {
     return null;
   }
-
   return (
     <div className="min-h-full">
       <header className="border-b border-ledger-line">
         <div className="mx-auto max-w-5xl px-6 py-6 flex items-center justify-between">
-          <div>
-            <h1 className="font-display text-xl font-semibold tracking-tight text-ledger-text">
-              Ledger
-            </h1>
-            <p className="text-xs text-ledger-muted mt-0.5">Personal finance, kept honest.</p>
+          <div className="flex items-center gap-3">
+            <img src="/logo.png" alt="Xpense logo" className="h-9 w-auto" />
+            <div>
+              <h1 className="font-display text-xl font-semibold tracking-tight text-ledger-text">
+                Xpense
+              </h1>
+              <p className="text-xs text-ledger-muted mt-0.5">Your online tracker buddy</p>
+            </div>
           </div>
           <div className="flex items-center gap-4">
             <p className="hidden sm:block text-xs text-ledger-muted">
@@ -49,20 +47,17 @@ export default function Home() {
           </div>
         </div>
       </header>
-
       <main className="mx-auto max-w-5xl px-6 py-8">
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
           <SummaryCard label="Balance" amount={balance} icon={Wallet} accent="text" />
           <SummaryCard label="Income" amount={income} icon={TrendingUp} accent="gold" />
           <SummaryCard label="Expenses" amount={expenses} icon={TrendingDown} accent="slate" />
         </div>
-
         <div className="grid grid-cols-1 lg:grid-cols-[1fr_1.4fr] gap-6">
           <div className="space-y-6">
             <TransactionForm onAdd={addTransaction} />
             <CategoryChart transactions={transactions} />
           </div>
-
           <div>
             <h2 className="font-display text-sm font-semibold uppercase tracking-wider text-ledger-muted mb-3">
               Recent entries
@@ -71,7 +66,6 @@ export default function Home() {
           </div>
         </div>
       </main>
-
       <footer className="mt-auto border-t border-ledger-line">
         <div className="mx-auto max-w-5xl px-6 py-5">
           <p className="text-xs text-ledger-muted">

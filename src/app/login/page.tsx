@@ -3,7 +3,6 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
-import { BookOpen } from "lucide-react";
 
 type Mode = "signin" | "signup";
 
@@ -49,11 +48,9 @@ export default function LoginPage() {
     <div className="min-h-full flex items-center justify-center px-6">
       <div className="w-full max-w-sm">
         <div className="flex flex-col items-center mb-8">
-          <div className="rounded-md bg-ledger-surface-2 p-2.5 mb-3">
-            <BookOpen size={20} className="text-ledger-gold-soft" />
-          </div>
-          <h1 className="font-display text-xl font-semibold text-ledger-text">Ledger</h1>
-          <p className="text-xs text-ledger-muted mt-1">Personal finance, kept honest.</p>
+          <img src="/logo.png" alt="Xpense logo" className="h-14 w-auto mb-3" />
+          <h1 className="font-display text-xl font-semibold text-ledger-text">Xpense</h1>
+          <p className="text-xs text-ledger-muted mt-1">Your online tracker buddy</p>
         </div>
 
         <div className="rounded-lg border border-ledger-line bg-ledger-surface p-6">
