@@ -64,6 +64,7 @@ body::before {
   inset: -25%;
   z-index: -1;
   pointer-events: none;
+  background-repeat: no-repeat;
   background-image:
     radial-gradient(ellipse 55% 50% at 20% 20%, rgba(201, 162, 39, 0.38), transparent 60%),
     radial-gradient(ellipse 50% 45% at 80% 30%, rgba(111, 147, 184, 0.40), transparent 60%),
