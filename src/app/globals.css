@@ -47,9 +47,10 @@ body {
 
 .light body {
   background-image:
-    radial-gradient(ellipse 80% 60% at 15% 0%, rgba(201, 162, 39, 0.12), transparent 60%),
-    radial-gradient(ellipse 70% 50% at 100% 30%, rgba(111, 147, 184, 0.14), transparent 60%),
-    radial-gradient(ellipse 60% 50% at 20% 100%, rgba(201, 162, 39, 0.08), transparent 60%),
+    radial-gradient(ellipse 90% 70% at 10% -10%, rgba(201, 162, 39, 0.28), transparent 55%),
+    radial-gradient(ellipse 80% 60% at 105% 20%, rgba(111, 147, 184, 0.30), transparent 55%),
+    radial-gradient(ellipse 70% 60% at 15% 110%, rgba(111, 147, 184, 0.22), transparent 55%),
+    radial-gradient(ellipse 60% 50% at 90% 100%, rgba(201, 162, 39, 0.20), transparent 55%),
     repeating-linear-gradient(
       to bottom,
       transparent,
