@@ -33,7 +33,9 @@ html,
 body {
   height: 100%;
 }
+
 body {
+  position: relative;
   background-color: var(--color-ledger-bg);
   background-image: repeating-linear-gradient(
     to bottom,
@@ -43,22 +45,49 @@ body {
     rgba(255, 255, 255, 0.025) 36px
   );
   transition: background-color 0.2s ease;
+  overflow-x: hidden;
 }
 
 .light body {
+  background-image: repeating-linear-gradient(
+    to bottom,
+    transparent,
+    transparent 35px,
+    rgba(0, 0, 0, 0.02) 35px,
+    rgba(0, 0, 0, 0.02) 36px
+  );
+}
+
+body::before {
+  content: "";
+  position: fixed;
+  inset: -20%;
+  z-index: -1;
+  pointer-events: none;
   background-image:
-    radial-gradient(ellipse 90% 70% at 10% -10%, rgba(201, 162, 39, 0.28), transparent 55%),
-    radial-gradient(ellipse 80% 60% at 105% 20%, rgba(111, 147, 184, 0.30), transparent 55%),
-    radial-gradient(ellipse 70% 60% at 15% 110%, rgba(111, 147, 184, 0.22), transparent 55%),
-    radial-gradient(ellipse 60% 50% at 90% 100%, rgba(201, 162, 39, 0.20), transparent 55%),
-    repeating-linear-gradient(
-      to bottom,
-      transparent,
-      transparent 35px,
-      rgba(0, 0, 0, 0.02) 35px,
-      rgba(0, 0, 0, 0.02) 36px
-    );
-  background-attachment: fixed;
+    radial-gradient(ellipse 45% 40% at 20% 20%, rgba(201, 162, 39, 0.10), transparent 60%),
+    radial-gradient(ellipse 40% 35% at 80% 30%, rgba(111, 147, 184, 0.10), transparent 60%),
+    radial-gradient(ellipse 40% 35% at 25% 85%, rgba(111, 147, 184, 0.08), transparent 60%),
+    radial-gradient(ellipse 35% 30% at 85% 90%, rgba(201, 162, 39, 0.08), transparent 60%);
+  background-size: 200% 200%;
+  animation: gradientShift 35s ease-in-out infinite alternate;
+}
+
+.light body::before {
+  background-image:
+    radial-gradient(ellipse 45% 40% at 20% 20%, rgba(201, 162, 39, 0.30), transparent 60%),
+    radial-gradient(ellipse 40% 35% at 80% 30%, rgba(111, 147, 184, 0.32), transparent 60%),
+    radial-gradient(ellipse 40% 35% at 25% 85%, rgba(111, 147, 184, 0.24), transparent 60%),
+    radial-gradient(ellipse 35% 30% at 85% 90%, rgba(201, 162, 39, 0.22), transparent 60%);
+}
+
+@keyframes gradientShift {
+  0%, 100% {
+    background-position: 0% 0%, 100% 0%, 0% 100%, 100% 100%;
+  }
+  50% {
+    background-position: 100% 100%, 0% 100%, 100% 0%, 0% 0%;
+  }
 }
 
 ::selection {
