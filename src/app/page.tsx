@@ -4,16 +4,21 @@ import { useTransactions } from "@/lib/useTransactions";
 import { SummaryCard } from "@/components/SummaryCard";
 import { TransactionForm } from "@/components/TransactionForm";
 import { TransactionList } from "@/components/TransactionList";
+import { TransactionFilters } from "@/components/TransactionFilters";
 import { CategoryChart } from "@/components/CategoryChart";
 import { UserMenu } from "@/components/UserMenu";
 import { EditTransactionModal } from "@/components/EditTransactionModal";
-import { Transaction } from "@/lib/types";
+import { Category, Transaction, TransactionType } from "@/lib/types";
 import { Wallet, TrendingUp, TrendingDown } from "lucide-react";
 
 export default function Home() {
   const { transactions, addTransaction, updateTransaction, deleteTransaction, loaded } =
     useTransactions();
   const [editingTransaction, setEditingTransaction] = useState<Transaction | null>(null);
+
+  const [search, setSearch] = useState("");
+  const [categoryFilter, setCategoryFilter] = useState<Category | "All">("All");
+  const [typeFilter, setTypeFilter] = useState<TransactionType | "All">("All");
 
   const { income, expenses, balance } = useMemo(() => {
     const income = transactions
@@ -24,6 +29,26 @@ export default function Home() {
       .reduce((sum, t) => sum + t.amount, 0);
     return { income, expenses, balance: income - expenses };
   }, [transactions]);
+
+  const filteredTransactions = useMemo(() => {
+    return transactions.filter((t) => {
+      const matchesSearch =
+        search.trim() === "" ||
+        t.note.toLowerCase().includes(search.toLowerCase()) ||
+        t.category.toLowerCase().includes(search.toLowerCase());
+      const matchesCategory = categoryFilter === "All" || t.category === categoryFilter;
+      const matchesType = typeFilter === "All" || t.type === typeFilter;
+      return matchesSearch && matchesCategory && matchesType;
+    });
+  }, [transactions, search, categoryFilter, typeFilter]);
+
+  const hasActiveFilters = search.trim() !== "" || categoryFilter !== "All" || typeFilter !== "All";
+
+  function clearFilters() {
+    setSearch("");
+    setCategoryFilter("All");
+    setTypeFilter("All");
+  }
 
   if (!loaded) {
     return null;
@@ -70,8 +95,18 @@ export default function Home() {
             <h2 className="font-display text-sm font-semibold uppercase tracking-wider text-ledger-muted mb-3">
               Recent entries
             </h2>
+            <TransactionFilters
+              search={search}
+              onSearchChange={setSearch}
+              category={categoryFilter}
+              onCategoryChange={setCategoryFilter}
+              type={typeFilter}
+              onTypeChange={setTypeFilter}
+              onClear={clearFilters}
+              hasActiveFilters={hasActiveFilters}
+            />
             <TransactionList
-              transactions={transactions}
+              transactions={filteredTransactions}
               onDelete={deleteTransaction}
               onEdit={setEditingTransaction}
             />
