@@ -47,3 +47,11 @@ export interface RecurringTransaction {
   note: string;
   nextDueDate: string; // ISO date string (yyyy-mm-dd)
 }
+
+export interface SavingsGoal {
+  id: string;
+  name: string;
+  targetAmount: number;
+  currentAmount: number;
+  deadline: string; // ISO date string, e.g. "2026-12-31"
+}

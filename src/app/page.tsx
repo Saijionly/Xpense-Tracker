@@ -11,6 +11,8 @@ import { CategoryChart } from "@/components/CategoryChart";
 import { TrendsChart } from "@/components/TrendsChart";
 import { InsightsPanel } from "@/components/InsightsPanel";
 import { BudgetPanel } from "@/components/BudgetPanel";
+import { BudgetAlerts } from "@/components/BudgetAlerts";
+import { SavingsGoals } from "@/components/SavingsGoals";
 import { RecurringPanel } from "@/components/RecurringPanel";
 import { UserMenu } from "@/components/UserMenu";
 import { EditTransactionModal } from "@/components/EditTransactionModal";
@@ -90,6 +92,7 @@ export default function Home() {
         </div>
       </header>
       <main className="mx-auto max-w-5xl px-6 py-8">
+        <BudgetAlerts budgets={budgets} transactions={transactions} />
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
           <SummaryCard label="Balance" amount={balance} icon={Wallet} accent="text" />
           <SummaryCard label="Income" amount={income} icon={TrendingUp} accent="gold" />
@@ -99,6 +102,7 @@ export default function Home() {
           <div className="space-y-6">
             <TransactionForm onAdd={addTransaction} />
             <InsightsPanel transactions={transactions} />
+            <SavingsGoals />
             <BudgetPanel
               budgets={budgets}
               transactions={transactions}
