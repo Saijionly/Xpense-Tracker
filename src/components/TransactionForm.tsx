@@ -11,6 +11,7 @@ import {
 import { SUPPORTED_CURRENCIES, CurrencyCode, getExchangeRateToPHP } from "@/lib/currency";
 import { uploadReceipt } from "@/lib/receipts";
 import { parseQuickAdd } from "@/lib/quickAdd";
+import { TagInput } from "@/components/TagInput";
 import { Plus, Loader2, Paperclip, X, Zap } from "lucide-react";
 
 interface TransactionFormProps {
@@ -24,6 +25,7 @@ export function TransactionForm({ onAdd }: TransactionFormProps) {
   const [category, setCategory] = useState<Category>("Food");
   const [note, setNote] = useState("");
   const [date, setDate] = useState(() => new Date().toISOString().slice(0, 10));
+  const [tags, setTags] = useState<string[]>([]);
   const [receiptFile, setReceiptFile] = useState<File | null>(null);
   const [receiptPreview, setReceiptPreview] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
@@ -90,6 +92,7 @@ export function TransactionForm({ onAdd }: TransactionFormProps) {
           originalAmount: null,
           exchangeRate: null,
           receiptUrl,
+          tags,
         });
       } else {
         const rate = await getExchangeRateToPHP(currency);
@@ -104,11 +107,13 @@ export function TransactionForm({ onAdd }: TransactionFormProps) {
           originalAmount: numeric,
           exchangeRate: rate,
           receiptUrl,
+          tags,
         });
       }
       setAmount("");
       setNote("");
       setCurrency("PHP");
+      setTags([]);
       clearReceipt();
     } finally {
       setSubmitting(false);
@@ -245,6 +250,11 @@ export function TransactionForm({ onAdd }: TransactionFormProps) {
           placeholder="e.g. Lunch with friends"
           className="w-full rounded-md bg-ledger-surface-2 border border-ledger-line px-3 py-2 text-sm text-ledger-text placeholder:text-ledger-muted/50 focus:outline-none focus:border-ledger-gold/60"
         />
+      </div>
+
+      <div className="mb-3">
+        <label className="block text-xs text-ledger-muted mb-1">Tags (optional)</label>
+        <TagInput tags={tags} onChange={setTags} />
       </div>
 
       <div className="mb-4">

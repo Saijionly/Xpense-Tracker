@@ -8,6 +8,7 @@ import {
   Transaction,
   TransactionType,
 } from "@/lib/types";
+import { TagInput } from "@/components/TagInput";
 import { X } from "lucide-react";
 
 interface EditTransactionModalProps {
@@ -22,6 +23,7 @@ export function EditTransactionModal({ transaction, onClose, onSave }: EditTrans
   const [category, setCategory] = useState<Category>("Food");
   const [note, setNote] = useState("");
   const [date, setDate] = useState("");
+  const [tags, setTags] = useState<string[]>([]);
 
   const categoryOptions = type === "expense" ? EXPENSE_CATEGORIES : INCOME_CATEGORIES;
 
@@ -32,6 +34,7 @@ export function EditTransactionModal({ transaction, onClose, onSave }: EditTrans
       setCategory(transaction.category);
       setNote(transaction.note);
       setDate(transaction.date);
+      setTags(transaction.tags ?? []);
     }
   }, [transaction]);
 
@@ -46,7 +49,7 @@ export function EditTransactionModal({ transaction, onClose, onSave }: EditTrans
     e.preventDefault();
     const numeric = parseFloat(amount);
     if (!numeric || numeric <= 0) return;
-   onSave(transaction!.id, {
+    onSave(transaction!.id, {
       type,
       amount: numeric,
       category,
@@ -56,7 +59,8 @@ export function EditTransactionModal({ transaction, onClose, onSave }: EditTrans
       originalAmount: transaction!.originalAmount,
       exchangeRate: transaction!.exchangeRate,
       receiptUrl: transaction!.receiptUrl,
-});
+      tags,
+    });
     onClose();
   }
 
@@ -150,7 +154,7 @@ export function EditTransactionModal({ transaction, onClose, onSave }: EditTrans
             </select>
           </div>
 
-          <div className="mb-4">
+          <div className="mb-3">
             <label className="block text-xs text-ledger-muted mb-1">Note (optional)</label>
             <input
               type="text"
@@ -158,6 +162,11 @@ export function EditTransactionModal({ transaction, onClose, onSave }: EditTrans
               onChange={(e) => setNote(e.target.value)}
               className="w-full rounded-md bg-ledger-surface-2 border border-ledger-line px-3 py-2 text-sm text-ledger-text focus:outline-none focus:border-ledger-gold/60"
             />
+          </div>
+
+          <div className="mb-4">
+            <label className="block text-xs text-ledger-muted mb-1">Tags (optional)</label>
+            <TagInput tags={tags} onChange={setTags} />
           </div>
 
           <div className="flex gap-2">

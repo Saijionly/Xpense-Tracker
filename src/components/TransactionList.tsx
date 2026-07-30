@@ -57,13 +57,27 @@ export function TransactionList({ transactions, onDelete, onEdit }: TransactionL
                       <Receipt size={12} className="text-ledger-muted shrink-0" />
                     )}
                   </p>
-                  <p className="text-xs text-ledger-muted">
-                    {t.category} ·{" "}
-                    {new Date(t.date).toLocaleDateString("en-PH", {
-                      month: "short",
-                      day: "numeric",
-                      year: "numeric",
-                    })}
+                  <p className="text-xs text-ledger-muted flex items-center gap-1.5 flex-wrap">
+                    <span>
+                      {t.category} ·{" "}
+                      {new Date(t.date).toLocaleDateString("en-PH", {
+                        month: "short",
+                        day: "numeric",
+                        year: "numeric",
+                      })}
+                    </span>
+                    {t.tags && t.tags.length > 0 && (
+                      <span className="flex items-center gap-1">
+                        {t.tags.map((tag) => (
+                          <span
+                            key={tag}
+                            className="rounded-full bg-ledger-surface-2 px-1.5 py-0.5 text-[10px] text-ledger-gold-soft"
+                          >
+                            {tag}
+                          </span>
+                        ))}
+                      </span>
+                    )}
                   </p>
                 </div>
               </div>
