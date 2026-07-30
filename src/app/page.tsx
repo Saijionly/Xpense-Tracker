@@ -9,6 +9,7 @@ import { TransactionList } from "@/components/TransactionList";
 import { TransactionFilters } from "@/components/TransactionFilters";
 import { CategoryChart } from "@/components/CategoryChart";
 import { TrendsChart } from "@/components/TrendsChart";
+import { InsightsPanel } from "@/components/InsightsPanel";
 import { BudgetPanel } from "@/components/BudgetPanel";
 import { RecurringPanel } from "@/components/RecurringPanel";
 import { UserMenu } from "@/components/UserMenu";
@@ -97,6 +98,7 @@ export default function Home() {
         <div className="grid grid-cols-1 lg:grid-cols-[1fr_1.4fr] gap-6">
           <div className="space-y-6">
             <TransactionForm onAdd={addTransaction} />
+            <InsightsPanel transactions={transactions} />
             <BudgetPanel
               budgets={budgets}
               transactions={transactions}
