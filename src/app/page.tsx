@@ -8,6 +8,7 @@ import { TransactionForm } from "@/components/TransactionForm";
 import { TransactionList } from "@/components/TransactionList";
 import { TransactionFilters } from "@/components/TransactionFilters";
 import { CategoryChart } from "@/components/CategoryChart";
+import { TrendsChart } from "@/components/TrendsChart";
 import { BudgetPanel } from "@/components/BudgetPanel";
 import { RecurringPanel } from "@/components/RecurringPanel";
 import { UserMenu } from "@/components/UserMenu";
@@ -108,6 +109,7 @@ export default function Home() {
               onDelete={deleteRecurring}
             />
             <CategoryChart transactions={transactions} />
+            <TrendsChart transactions={transactions} />
           </div>
           <div>
             <h2 className="font-display text-sm font-semibold uppercase tracking-wider text-ledger-muted mb-3">
