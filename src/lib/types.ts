@@ -54,3 +54,10 @@ export interface SavingsGoal {
   currentAmount: number;
   deadline: string; // ISO date string, e.g. "2026-12-31"
 }
+export interface Debt {
+  id: string;
+  name: string;
+  totalAmount: number;
+  paidAmount: number;
+  dueDate: string | null; // ISO date string (yyyy-mm-dd)
+}

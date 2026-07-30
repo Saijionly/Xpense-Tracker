@@ -3,6 +3,7 @@ import { useCallback, useMemo, useState } from "react";
 import { useTransactions } from "@/lib/useTransactions";
 import { useBudgets } from "@/lib/useBudgets";
 import { useRecurring } from "@/lib/useRecurring";
+import { useDebts } from "@/lib/useDebts";
 import { useLanguage } from "@/lib/LanguageContext";
 import { SummaryCard } from "@/components/SummaryCard";
 import { TransactionForm } from "@/components/TransactionForm";
@@ -18,6 +19,7 @@ import { BudgetAlerts } from "@/components/BudgetAlerts";
 import { RecurringReminders } from "@/components/RecurringReminders";
 import { SavingsGoals } from "@/components/SavingsGoals";
 import { RecurringPanel } from "@/components/RecurringPanel";
+import { DebtTracker } from "@/components/DebtTracker";
 import { UserMenu } from "@/components/UserMenu";
 import { EditTransactionModal } from "@/components/EditTransactionModal";
 import { ImportCSVModal } from "@/components/ImportCSVModal";
@@ -31,6 +33,7 @@ export default function Home() {
   const { budgets, setBudget, deleteBudget, loaded: budgetsLoaded } = useBudgets();
   const { recurring, addRecurring, deleteRecurring, loaded: recurringLoaded } =
     useRecurring(refetch);
+  const { debts, addDebt, addPayment, deleteDebt, loaded: debtsLoaded } = useDebts();
   const { t } = useLanguage();
   const [editingTransaction, setEditingTransaction] = useState<Transaction | null>(null);
   const [showImportModal, setShowImportModal] = useState(false);
@@ -108,7 +111,7 @@ export default function Home() {
     setCustomEnd("");
   }
 
-  if (!loaded || !budgetsLoaded || !recurringLoaded) {
+  if (!loaded || !budgetsLoaded || !recurringLoaded || !debtsLoaded) {
     return null;
   }
 
@@ -163,6 +166,12 @@ export default function Home() {
               recurring={recurring}
               onAdd={addRecurring}
               onDelete={deleteRecurring}
+            />
+             <DebtTracker
+              debts={debts}
+              onAdd={addDebt}
+              onPay={addPayment}
+              onDelete={deleteDebt}
             />
             <CategoryChart transactions={transactions} />
             <TrendsChart transactions={transactions} />
