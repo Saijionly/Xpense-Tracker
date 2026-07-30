@@ -6,7 +6,7 @@ import { useRecurring } from "@/lib/useRecurring";
 import { SummaryCard } from "@/components/SummaryCard";
 import { TransactionForm } from "@/components/TransactionForm";
 import { TransactionList } from "@/components/TransactionList";
-import { TransactionFilters } from "@/components/TransactionFilters";
+import { TransactionFilters, DateRangeOption } from "@/components/TransactionFilters";
 import { CategoryChart } from "@/components/CategoryChart";
 import { TrendsChart } from "@/components/TrendsChart";
 import { InsightsPanel } from "@/components/InsightsPanel";
@@ -30,6 +30,9 @@ export default function Home() {
   const [search, setSearch] = useState("");
   const [categoryFilter, setCategoryFilter] = useState<Category | "All">("All");
   const [typeFilter, setTypeFilter] = useState<TransactionType | "All">("All");
+  const [dateRange, setDateRange] = useState<DateRangeOption>("all");
+  const [customStart, setCustomStart] = useState("");
+  const [customEnd, setCustomEnd] = useState("");
 
   const { income, expenses, balance } = useMemo(() => {
     const income = transactions
@@ -42,6 +45,17 @@ export default function Home() {
   }, [transactions]);
 
   const filteredTransactions = useMemo(() => {
+    const now = new Date();
+
+    // Start of this week (Monday)
+    const dayOfWeek = now.getDay();
+    const diffToMonday = dayOfWeek === 0 ? 6 : dayOfWeek - 1;
+    const startOfWeek = new Date(now);
+    startOfWeek.setDate(now.getDate() - diffToMonday);
+    startOfWeek.setHours(0, 0, 0, 0);
+
+    const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+
     return transactions.filter((t) => {
       const matchesSearch =
         search.trim() === "" ||
@@ -49,16 +63,42 @@ export default function Home() {
         t.category.toLowerCase().includes(search.toLowerCase());
       const matchesCategory = categoryFilter === "All" || t.category === categoryFilter;
       const matchesType = typeFilter === "All" || t.type === typeFilter;
-      return matchesSearch && matchesCategory && matchesType;
-    });
-  }, [transactions, search, categoryFilter, typeFilter]);
 
-  const hasActiveFilters = search.trim() !== "" || categoryFilter !== "All" || typeFilter !== "All";
+      let matchesDate = true;
+      const tDate = new Date(t.date);
+
+      if (dateRange === "thisWeek") {
+        matchesDate = tDate >= startOfWeek;
+      } else if (dateRange === "thisMonth") {
+        matchesDate = tDate >= startOfMonth;
+      } else if (dateRange === "custom") {
+        if (customStart) {
+          matchesDate = matchesDate && tDate >= new Date(customStart);
+        }
+        if (customEnd) {
+          const end = new Date(customEnd);
+          end.setHours(23, 59, 59, 999);
+          matchesDate = matchesDate && tDate <= end;
+        }
+      }
+
+      return matchesSearch && matchesCategory && matchesType && matchesDate;
+    });
+  }, [transactions, search, categoryFilter, typeFilter, dateRange, customStart, customEnd]);
+
+  const hasActiveFilters =
+    search.trim() !== "" ||
+    categoryFilter !== "All" ||
+    typeFilter !== "All" ||
+    dateRange !== "all";
 
   function clearFilters() {
     setSearch("");
     setCategoryFilter("All");
     setTypeFilter("All");
+    setDateRange("all");
+    setCustomStart("");
+    setCustomEnd("");
   }
 
   if (!loaded || !budgetsLoaded || !recurringLoaded) {
@@ -128,6 +168,12 @@ export default function Home() {
               onCategoryChange={setCategoryFilter}
               type={typeFilter}
               onTypeChange={setTypeFilter}
+              dateRange={dateRange}
+              onDateRangeChange={setDateRange}
+              customStart={customStart}
+              onCustomStartChange={setCustomStart}
+              customEnd={customEnd}
+              onCustomEndChange={setCustomEnd}
               onClear={clearFilters}
               hasActiveFilters={hasActiveFilters}
             />

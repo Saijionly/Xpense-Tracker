@@ -1,7 +1,8 @@
 "use client";
-
 import { CATEGORIES, Category, TransactionType } from "@/lib/types";
 import { Search, X } from "lucide-react";
+
+export type DateRangeOption = "all" | "thisWeek" | "thisMonth" | "custom";
 
 interface TransactionFiltersProps {
   search: string;
@@ -10,6 +11,12 @@ interface TransactionFiltersProps {
   onCategoryChange: (v: Category | "All") => void;
   type: TransactionType | "All";
   onTypeChange: (v: TransactionType | "All") => void;
+  dateRange: DateRangeOption;
+  onDateRangeChange: (v: DateRangeOption) => void;
+  customStart: string;
+  onCustomStartChange: (v: string) => void;
+  customEnd: string;
+  onCustomEndChange: (v: string) => void;
   onClear: () => void;
   hasActiveFilters: boolean;
 }
@@ -21,6 +28,12 @@ export function TransactionFilters({
   onCategoryChange,
   type,
   onTypeChange,
+  dateRange,
+  onDateRangeChange,
+  customStart,
+  onCustomStartChange,
+  customEnd,
+  onCustomEndChange,
   onClear,
   hasActiveFilters,
 }: TransactionFiltersProps) {
@@ -39,7 +52,6 @@ export function TransactionFilters({
           className="w-full rounded-md bg-ledger-surface-2 border border-ledger-line pl-9 pr-3 py-2 text-sm text-ledger-text placeholder:text-ledger-muted/50 focus:outline-none focus:border-ledger-gold/60"
         />
       </div>
-
       <div className="flex flex-wrap gap-2">
         <select
           value={type}
@@ -50,7 +62,6 @@ export function TransactionFilters({
           <option value="income">Income</option>
           <option value="expense">Expense</option>
         </select>
-
         <select
           value={category}
           onChange={(e) => onCategoryChange(e.target.value as Category | "All")}
@@ -63,7 +74,16 @@ export function TransactionFilters({
             </option>
           ))}
         </select>
-
+        <select
+          value={dateRange}
+          onChange={(e) => onDateRangeChange(e.target.value as DateRangeOption)}
+          className="rounded-md bg-ledger-surface-2 border border-ledger-line px-3 py-1.5 text-xs text-ledger-text focus:outline-none focus:border-ledger-gold/60"
+        >
+          <option value="all">All time</option>
+          <option value="thisWeek">This week</option>
+          <option value="thisMonth">This month</option>
+          <option value="custom">Custom range</option>
+        </select>
         {hasActiveFilters && (
           <button
             onClick={onClear}
@@ -74,6 +94,25 @@ export function TransactionFilters({
           </button>
         )}
       </div>
+
+      {dateRange === "custom" && (
+        <div className="flex flex-wrap items-center gap-2 mt-2 pt-2 border-t border-ledger-line">
+          <label className="text-xs text-ledger-muted">From</label>
+          <input
+            type="date"
+            value={customStart}
+            onChange={(e) => onCustomStartChange(e.target.value)}
+            className="rounded-md bg-ledger-surface-2 border border-ledger-line px-2 py-1 text-xs text-ledger-text focus:outline-none focus:border-ledger-gold/60"
+          />
+          <label className="text-xs text-ledger-muted">To</label>
+          <input
+            type="date"
+            value={customEnd}
+            onChange={(e) => onCustomEndChange(e.target.value)}
+            className="rounded-md bg-ledger-surface-2 border border-ledger-line px-2 py-1 text-xs text-ledger-text focus:outline-none focus:border-ledger-gold/60"
+          />
+        </div>
+      )}
     </div>
   );
 }
