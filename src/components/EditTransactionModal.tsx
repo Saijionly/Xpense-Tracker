@@ -46,7 +46,16 @@ export function EditTransactionModal({ transaction, onClose, onSave }: EditTrans
     e.preventDefault();
     const numeric = parseFloat(amount);
     if (!numeric || numeric <= 0) return;
-    onSave(transaction!.id, { type, amount: numeric, category, note, date });
+    onSave(transaction!.id, {
+      type,
+      amount: numeric,
+      category,
+      note,
+      date,
+      currency: transaction!.currency,
+      originalAmount: transaction!.originalAmount,
+      exchangeRate: transaction!.exchangeRate,
+    });
     onClose();
   }
 
@@ -94,7 +103,9 @@ export function EditTransactionModal({ transaction, onClose, onSave }: EditTrans
 
           <div className="grid grid-cols-2 gap-3 mb-3">
             <div>
-              <label className="block text-xs text-ledger-muted mb-1">Amount (₱)</label>
+              <label className="block text-xs text-ledger-muted mb-1">
+                Amount ({transaction.currency !== "PHP" ? `${transaction.currency} → ` : ""}₱)
+              </label>
               <input
                 type="number"
                 inputMode="decimal"
@@ -105,6 +116,11 @@ export function EditTransactionModal({ transaction, onClose, onSave }: EditTrans
                 onChange={(e) => setAmount(e.target.value)}
                 className="tabular font-mono w-full rounded-md bg-ledger-surface-2 border border-ledger-line px-3 py-2 text-sm text-ledger-text focus:outline-none focus:border-ledger-gold/60"
               />
+              {transaction.currency !== "PHP" && transaction.originalAmount != null && (
+                <p className="text-[11px] text-ledger-muted mt-1">
+                  Original: {transaction.originalAmount.toLocaleString()} {transaction.currency}
+                </p>
+              )}
             </div>
             <div>
               <label className="block text-xs text-ledger-muted mb-1">Date</label>

@@ -8,7 +8,8 @@ import {
   Transaction,
   TransactionType,
 } from "@/lib/types";
-import { Plus } from "lucide-react";
+import { SUPPORTED_CURRENCIES, CurrencyCode, getExchangeRateToPHP } from "@/lib/currency";
+import { Plus, Loader2 } from "lucide-react";
 
 interface TransactionFormProps {
   onAdd: (t: Omit<Transaction, "id" | "createdAt">) => void;
@@ -17,9 +18,11 @@ interface TransactionFormProps {
 export function TransactionForm({ onAdd }: TransactionFormProps) {
   const [type, setType] = useState<TransactionType>("expense");
   const [amount, setAmount] = useState("");
+  const [currency, setCurrency] = useState<CurrencyCode>("PHP");
   const [category, setCategory] = useState<Category>("Food");
   const [note, setNote] = useState("");
   const [date, setDate] = useState(() => new Date().toISOString().slice(0, 10));
+  const [converting, setConverting] = useState(false);
 
   const categoryOptions = type === "expense" ? EXPENSE_CATEGORIES : INCOME_CATEGORIES;
 
@@ -28,14 +31,44 @@ export function TransactionForm({ onAdd }: TransactionFormProps) {
     setCategory(next === "expense" ? EXPENSE_CATEGORIES[0] : INCOME_CATEGORIES[0]);
   }
 
-  function handleSubmit(e: React.FormEvent) {
+  async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     const numeric = parseFloat(amount);
     if (!numeric || numeric <= 0) return;
 
-    onAdd({ type, amount: numeric, category, note, date });
-    setAmount("");
-    setNote("");
+    setConverting(true);
+    try {
+      if (currency === "PHP") {
+        onAdd({
+          type,
+          amount: numeric,
+          category,
+          note,
+          date,
+          currency: "PHP",
+          originalAmount: null,
+          exchangeRate: null,
+        });
+      } else {
+        const rate = await getExchangeRateToPHP(currency);
+        const converted = numeric * rate;
+        onAdd({
+          type,
+          amount: converted,
+          category,
+          note,
+          date,
+          currency,
+          originalAmount: numeric,
+          exchangeRate: rate,
+        });
+      }
+      setAmount("");
+      setNote("");
+      setCurrency("PHP");
+    } finally {
+      setConverting(false);
+    }
   }
 
   return (
@@ -74,18 +107,31 @@ export function TransactionForm({ onAdd }: TransactionFormProps) {
 
       <div className="grid grid-cols-2 gap-3 mb-3">
         <div>
-          <label className="block text-xs text-ledger-muted mb-1">Amount (₱)</label>
-          <input
-            type="number"
-            inputMode="decimal"
-            step="0.01"
-            min="0"
-            required
-            value={amount}
-            onChange={(e) => setAmount(e.target.value)}
-            placeholder="0.00"
-            className="tabular font-mono w-full rounded-md bg-ledger-surface-2 border border-ledger-line px-3 py-2 text-sm text-ledger-text placeholder:text-ledger-muted/50 focus:outline-none focus:border-ledger-gold/60"
-          />
+          <label className="block text-xs text-ledger-muted mb-1">Amount</label>
+          <div className="flex gap-1.5">
+            <input
+              type="number"
+              inputMode="decimal"
+              step="0.01"
+              min="0"
+              required
+              value={amount}
+              onChange={(e) => setAmount(e.target.value)}
+              placeholder="0.00"
+              className="tabular font-mono w-full rounded-md bg-ledger-surface-2 border border-ledger-line px-3 py-2 text-sm text-ledger-text placeholder:text-ledger-muted/50 focus:outline-none focus:border-ledger-gold/60"
+            />
+            <select
+              value={currency}
+              onChange={(e) => setCurrency(e.target.value as CurrencyCode)}
+              className="rounded-md bg-ledger-surface-2 border border-ledger-line px-2 text-xs text-ledger-text focus:outline-none focus:border-ledger-gold/60"
+            >
+              {SUPPORTED_CURRENCIES.map((c) => (
+                <option key={c} value={c}>
+                  {c}
+                </option>
+              ))}
+            </select>
+          </div>
         </div>
         <div>
           <label className="block text-xs text-ledger-muted mb-1">Date</label>
@@ -98,6 +144,12 @@ export function TransactionForm({ onAdd }: TransactionFormProps) {
           />
         </div>
       </div>
+
+      {currency !== "PHP" && (
+        <p className="text-[11px] text-ledger-muted mb-3">
+          Awtomatikong ico-convert sa PHP gamit ang live exchange rate pag na-submit.
+        </p>
+      )}
 
       <div className="mb-3">
         <label className="block text-xs text-ledger-muted mb-1">Category</label>
@@ -127,10 +179,20 @@ export function TransactionForm({ onAdd }: TransactionFormProps) {
 
       <button
         type="submit"
-        className="w-full flex items-center justify-center gap-2 rounded-md bg-ledger-gold text-ledger-bg font-medium py-2.5 text-sm hover:bg-ledger-gold-soft transition-colors"
+        disabled={converting}
+        className="w-full flex items-center justify-center gap-2 rounded-md bg-ledger-gold text-ledger-bg font-medium py-2.5 text-sm hover:bg-ledger-gold-soft transition-colors disabled:opacity-60"
       >
-        <Plus size={16} />
-        Add entry
+        {converting ? (
+          <>
+            <Loader2 size={16} className="animate-spin" />
+            Converting…
+          </>
+        ) : (
+          <>
+            <Plus size={16} />
+            Add entry
+          </>
+        )}
       </button>
     </form>
   );

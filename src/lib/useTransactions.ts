@@ -2,10 +2,12 @@
 import { useCallback, useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { Transaction } from "./types";
+
 export function useTransactions() {
   const supabase = createClient();
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [loaded, setLoaded] = useState(false);
+
   const fetchTransactions = useCallback(async () => {
     const { data, error } = await supabase
       .from("transactions")
@@ -22,16 +24,21 @@ export function useTransactions() {
           note: row.note ?? "",
           date: row.date,
           createdAt: new Date(row.created_at).getTime(),
+          currency: row.currency ?? "PHP",
+          originalAmount: row.original_amount != null ? Number(row.original_amount) : null,
+          exchangeRate: row.exchange_rate != null ? Number(row.exchange_rate) : null,
         })),
       );
     }
     setLoaded(true);
   }, [supabase]);
+
   // Fetch on mount (data must be loaded client-side, scoped to the logged-in user).
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect
     fetchTransactions();
   }, [fetchTransactions]);
+
   const addTransaction = useCallback(
     async (t: Omit<Transaction, "id" | "createdAt">) => {
       const {
@@ -45,6 +52,9 @@ export function useTransactions() {
         category: t.category,
         note: t.note,
         date: t.date,
+        currency: t.currency,
+        original_amount: t.originalAmount,
+        exchange_rate: t.exchangeRate,
       });
       if (!error) {
         await fetchTransactions();
@@ -52,6 +62,7 @@ export function useTransactions() {
     },
     [supabase, fetchTransactions],
   );
+
   const updateTransaction = useCallback(
     async (id: string, t: Omit<Transaction, "id" | "createdAt">) => {
       const { error } = await supabase
@@ -62,6 +73,9 @@ export function useTransactions() {
           category: t.category,
           note: t.note,
           date: t.date,
+          currency: t.currency,
+          original_amount: t.originalAmount,
+          exchange_rate: t.exchangeRate,
         })
         .eq("id", id);
       if (!error) {
@@ -70,6 +84,7 @@ export function useTransactions() {
     },
     [supabase, fetchTransactions],
   );
+
   const deleteTransaction = useCallback(
     async (id: string) => {
       const { error } = await supabase.from("transactions").delete().eq("id", id);
@@ -79,5 +94,6 @@ export function useTransactions() {
     },
     [supabase],
   );
+
   return { transactions, addTransaction, updateTransaction, deleteTransaction, loaded };
 }

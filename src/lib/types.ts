@@ -28,17 +28,22 @@ export type Category = (typeof CATEGORIES)[number];
 export interface Transaction {
   id: string;
   type: TransactionType;
-  amount: number;
+  amount: number; // always stored in PHP (base currency)
   category: Category;
   note: string;
   date: string; // ISO date string (yyyy-mm-dd)
   createdAt: number;
+  currency: string; // original currency, e.g. "USD"
+  originalAmount: number | null; // original amount before conversion (null if PHP)
+  exchangeRate: number | null; // rate used at time of entry (null if PHP)
 }
+
 export interface Budget {
   id: string;
   category: Category;
   monthlyLimit: number;
 }
+
 export interface RecurringTransaction {
   id: string;
   type: TransactionType;
