@@ -1,136 +1,233 @@
 "use client";
-
-import { useState } from "react";
-import { useRouter } from "next/navigation";
-import { createClient } from "@/lib/supabase/client";
+import { useCallback, useMemo, useState } from "react";
+import { useTransactions } from "@/lib/useTransactions";
+import { useBudgets } from "@/lib/useBudgets";
+import { useRecurring } from "@/lib/useRecurring";
 import { useLanguage } from "@/lib/LanguageContext";
+import { SummaryCard } from "@/components/SummaryCard";
+import { TransactionForm } from "@/components/TransactionForm";
+import { TransactionList } from "@/components/TransactionList";
+import { TransactionFilters, DateRangeOption } from "@/components/TransactionFilters";
+import { CategoryChart } from "@/components/CategoryChart";
+import { TrendsChart } from "@/components/TrendsChart";
+import { InsightsPanel } from "@/components/InsightsPanel";
+import { RecapPanel } from "@/components/RecapPanel";
+import { BudgetPanel } from "@/components/BudgetPanel";
+import { BudgetAlerts } from "@/components/BudgetAlerts";
+import { RecurringReminders } from "@/components/RecurringReminders";
+import { SavingsGoals } from "@/components/SavingsGoals";
+import { RecurringPanel } from "@/components/RecurringPanel";
+import { UserMenu } from "@/components/UserMenu";
+import { EditTransactionModal } from "@/components/EditTransactionModal";
+import { ImportCSVModal } from "@/components/ImportCSVModal";
 import { WelcomeGreeting } from "@/components/WelcomeGreeting";
+import { Category, Transaction, TransactionType } from "@/lib/types";
+import { Wallet, TrendingUp, TrendingDown, Upload } from "lucide-react";
 
-type Mode = "signin" | "signup";
-
-export default function LoginPage() {
-  const router = useRouter();
-  const supabase = createClient();
+export default function Home() {
+  const { transactions, addTransaction, updateTransaction, deleteTransaction, loaded, refetch } =
+    useTransactionsWithRefetch();
+  const { budgets, setBudget, deleteBudget, loaded: budgetsLoaded } = useBudgets();
+  const { recurring, addRecurring, deleteRecurring, loaded: recurringLoaded } =
+    useRecurring(refetch);
   const { t } = useLanguage();
+  const [editingTransaction, setEditingTransaction] = useState<Transaction | null>(null);
+  const [showImportModal, setShowImportModal] = useState(false);
 
-  const [mode, setMode] = useState<Mode>("signin");
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [message, setMessage] = useState<string | null>(null);
+  const [search, setSearch] = useState("");
+  const [categoryFilter, setCategoryFilter] = useState<Category | "All">("All");
+  const [typeFilter, setTypeFilter] = useState<TransactionType | "All">("All");
+  const [dateRange, setDateRange] = useState<DateRangeOption>("all");
+  const [customStart, setCustomStart] = useState("");
+  const [customEnd, setCustomEnd] = useState("");
 
-  async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
-    setError(null);
-    setMessage(null);
-    setLoading(true);
+  const { income, expenses, balance } = useMemo(() => {
+    const income = transactions
+      .filter((t) => t.type === "income")
+      .reduce((sum, t) => sum + t.amount, 0);
+    const expenses = transactions
+      .filter((t) => t.type === "expense")
+      .reduce((sum, t) => sum + t.amount, 0);
+    return { income, expenses, balance: income - expenses };
+  }, [transactions]);
 
-    if (mode === "signin") {
-      const { error } = await supabase.auth.signInWithPassword({ email, password });
-      setLoading(false);
-      if (error) {
-        setError(error.message);
-        return;
+  const filteredTransactions = useMemo(() => {
+    const now = new Date();
+
+    const dayOfWeek = now.getDay();
+    const diffToMonday = dayOfWeek === 0 ? 6 : dayOfWeek - 1;
+    const startOfWeek = new Date(now);
+    startOfWeek.setDate(now.getDate() - diffToMonday);
+    startOfWeek.setHours(0, 0, 0, 0);
+
+    const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+
+    return transactions.filter((t) => {
+      const matchesSearch =
+        search.trim() === "" ||
+        t.note.toLowerCase().includes(search.toLowerCase()) ||
+        t.category.toLowerCase().includes(search.toLowerCase());
+      const matchesCategory = categoryFilter === "All" || t.category === categoryFilter;
+      const matchesType = typeFilter === "All" || t.type === typeFilter;
+
+      let matchesDate = true;
+      const tDate = new Date(t.date);
+
+      if (dateRange === "thisWeek") {
+        matchesDate = tDate >= startOfWeek;
+      } else if (dateRange === "thisMonth") {
+        matchesDate = tDate >= startOfMonth;
+      } else if (dateRange === "custom") {
+        if (customStart) {
+          matchesDate = matchesDate && tDate >= new Date(customStart);
+        }
+        if (customEnd) {
+          const end = new Date(customEnd);
+          end.setHours(23, 59, 59, 999);
+          matchesDate = matchesDate && tDate <= end;
+        }
       }
-      router.push("/");
-      router.refresh();
-    } else {
-      const { error } = await supabase.auth.signUp({ email, password });
-      setLoading(false);
-      if (error) {
-        setError(error.message);
-        return;
-      }
-      setMessage(t("accountCreatedMsg"));
-      setMode("signin");
-    }
+
+      return matchesSearch && matchesCategory && matchesType && matchesDate;
+    });
+  }, [transactions, search, categoryFilter, typeFilter, dateRange, customStart, customEnd]);
+
+  const hasActiveFilters =
+    search.trim() !== "" ||
+    categoryFilter !== "All" ||
+    typeFilter !== "All" ||
+    dateRange !== "all";
+
+  function clearFilters() {
+    setSearch("");
+    setCategoryFilter("All");
+    setTypeFilter("All");
+    setDateRange("all");
+    setCustomStart("");
+    setCustomEnd("");
+  }
+
+  if (!loaded || !budgetsLoaded || !recurringLoaded) {
+    return null;
   }
 
   return (
-    <div className="min-h-full flex items-center justify-center px-6">
-      <div className="w-full max-w-sm">
-        <div className="flex flex-col items-center mb-8">
-          <img src="/logo.png" alt="Xpense logo" className="h-14 w-auto mb-3" />
-          <h1 className="font-display text-xl font-semibold text-ledger-text">Xpense</h1>
-          <p className="text-xs text-ledger-muted mt-1">{t("appTagline")}</p>
-          <WelcomeGreeting showName={false} />
-        </div>
-
-        <div className="rounded-lg border border-ledger-line bg-ledger-surface p-6">
-          <div className="flex gap-2 mb-5">
-            <button
-              type="button"
-              onClick={() => {
-                setMode("signin");
-                setError(null);
-                setMessage(null);
-              }}
-              className={`flex-1 rounded-md py-2 text-sm font-medium transition-colors ${
-                mode === "signin"
-                  ? "bg-ledger-gold/20 text-ledger-gold-soft border border-ledger-gold/40"
-                  : "bg-ledger-surface-2 text-ledger-muted border border-transparent"
-              }`}
-            >
-              {t("signIn")}
-            </button>
-            <button
-              type="button"
-              onClick={() => {
-                setMode("signup");
-                setError(null);
-                setMessage(null);
-              }}
-              className={`flex-1 rounded-md py-2 text-sm font-medium transition-colors ${
-                mode === "signup"
-                  ? "bg-ledger-gold/20 text-ledger-gold-soft border border-ledger-gold/40"
-                  : "bg-ledger-surface-2 text-ledger-muted border border-transparent"
-              }`}
-            >
-              {t("signUp")}
-            </button>
+    <div className="min-h-full">
+      <header className="border-b border-ledger-line">
+        <div className="mx-auto max-w-5xl px-6 py-6 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <img src="/logo.png" alt="Xpense logo" className="h-9 w-auto" />
+            <div>
+              <h1 className="font-display text-xl font-semibold tracking-tight text-ledger-text">
+                Xpense
+              </h1>
+              <WelcomeGreeting />
+            </div>
           </div>
-
-          <form onSubmit={handleSubmit} className="space-y-3">
-            <div>
-              <label className="block text-xs text-ledger-muted mb-1">{t("email")}</label>
-              <input
-                type="email"
-                required
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="you@example.com"
-                className="w-full rounded-md bg-ledger-surface-2 border border-ledger-line px-3 py-2 text-sm text-ledger-text placeholder:text-ledger-muted/50 focus:outline-none focus:border-ledger-gold/60"
-              />
-            </div>
-            <div>
-              <label className="block text-xs text-ledger-muted mb-1">{t("password")}</label>
-              <input
-                type="password"
-                required
-                minLength={6}
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                placeholder="••••••••"
-                className="w-full rounded-md bg-ledger-surface-2 border border-ledger-line px-3 py-2 text-sm text-ledger-text placeholder:text-ledger-muted/50 focus:outline-none focus:border-ledger-gold/60"
-              />
-            </div>
-
-            {error && <p className="text-xs text-ledger-slate-soft">{error}</p>}
-            {message && <p className="text-xs text-ledger-gold-soft">{message}</p>}
-
-            <button
-              type="submit"
-              disabled={loading}
-              className="w-full rounded-md bg-ledger-gold text-ledger-bg font-medium py-2.5 text-sm hover:bg-ledger-gold-soft transition-colors disabled:opacity-60"
-            >
-              {loading ? t("pleaseWait") : mode === "signin" ? t("signIn") : t("createAccount")}
-            </button>
-          </form>
+          <div className="flex items-center gap-4">
+            <p className="hidden sm:block text-xs text-ledger-muted">
+              {new Date().toLocaleDateString("en-PH", {
+                weekday: "long",
+                month: "long",
+                day: "numeric",
+                year: "numeric",
+              })}
+            </p>
+            <UserMenu />
+          </div>
         </div>
+      </header>
+      <main className="mx-auto max-w-5xl px-6 py-8">
+        <BudgetAlerts budgets={budgets} transactions={transactions} />
+        <RecurringReminders recurring={recurring} />
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
+          <SummaryCard label={t("balance")} amount={balance} icon={Wallet} accent="text" />
+          <SummaryCard label={t("incomeLabel")} amount={income} icon={TrendingUp} accent="gold" />
+          <SummaryCard label={t("expensesLabel")} amount={expenses} icon={TrendingDown} accent="slate" />
+        </div>
+        <div className="grid grid-cols-1 lg:grid-cols-[1fr_1.4fr] gap-6">
+          <div className="space-y-6">
+            <TransactionForm onAdd={addTransaction} />
+            <RecapPanel transactions={transactions} />
+            <InsightsPanel transactions={transactions} />
+            <SavingsGoals />
+            <BudgetPanel
+              budgets={budgets}
+              transactions={transactions}
+              onSet={setBudget}
+              onDelete={deleteBudget}
+            />
+            <RecurringPanel
+              recurring={recurring}
+              onAdd={addRecurring}
+              onDelete={deleteRecurring}
+            />
+            <CategoryChart transactions={transactions} />
+            <TrendsChart transactions={transactions} />
+          </div>
+          <div>
+            <div className="flex items-center justify-between mb-3">
+              <h2 className="font-display text-sm font-semibold uppercase tracking-wider text-ledger-muted">
+                {t("recentEntries")}
+              </h2>
+              <button
+                onClick={() => setShowImportModal(true)}
+                className="flex items-center gap-1 text-xs text-ledger-muted hover:text-ledger-gold-soft transition-colors"
+              >
+                <Upload size={12} /> {t("importCsv")}
+              </button>
+            </div>
+            <TransactionFilters
+              search={search}
+              onSearchChange={setSearch}
+              category={categoryFilter}
+              onCategoryChange={setCategoryFilter}
+              type={typeFilter}
+              onTypeChange={setTypeFilter}
+              dateRange={dateRange}
+              onDateRangeChange={setDateRange}
+              customStart={customStart}
+              onCustomStartChange={setCustomStart}
+              customEnd={customEnd}
+              onCustomEndChange={setCustomEnd}
+              onClear={clearFilters}
+              hasActiveFilters={hasActiveFilters}
+            />
+            <TransactionList
+              transactions={filteredTransactions}
+              onDelete={deleteTransaction}
+              onEdit={setEditingTransaction}
+            />
+          </div>
+        </div>
+      </main>
+      <footer className="mt-auto border-t border-ledger-line">
+        <div className="mx-auto max-w-5xl px-6 py-5">
+          <p className="text-xs text-ledger-muted">
+            Your data is private and stored securely, scoped to your account.
+          </p>
+        </div>
+      </footer>
 
-        <p className="text-xs text-ledger-muted text-center mt-4">{t("dataPrivacyNote")}</p>
-      </div>
+      <EditTransactionModal
+        transaction={editingTransaction}
+        onClose={() => setEditingTransaction(null)}
+        onSave={updateTransaction}
+      />
+
+      <ImportCSVModal
+        open={showImportModal}
+        onClose={() => setShowImportModal(false)}
+        onImport={addTransaction}
+      />
     </div>
   );
+}
+
+function useTransactionsWithRefetch() {
+  const hook = useTransactions();
+  const refetch = useCallback(() => {
+    window.location.reload();
+  }, []);
+  return { ...hook, refetch };
 }
