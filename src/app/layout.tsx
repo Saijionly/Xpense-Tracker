@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import { Space_Grotesk, IBM_Plex_Mono, Inter } from "next/font/google";
 import "./globals.css";
 import ThemeToggle from "@/components/ThemeToggle";
+import LanguageToggle from "@/components/LanguageToggle";
+import { LanguageProvider } from "@/lib/LanguageContext";
 
 const spaceGrotesk = Space_Grotesk({
   variable: "--font-display",
@@ -19,8 +21,8 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-   title: "Xpense — Your Online Tracker Buddy",
-   description: "A simple, friendly personal finance tracker.",
+  title: "Xpense — Your Online Tracker Buddy",
+  description: "A simple, friendly personal finance tracker.",
 };
 
 export default function RootLayout({
@@ -47,8 +49,11 @@ export default function RootLayout({
         />
       </head>
       <body className="min-h-full flex flex-col bg-ledger-bg text-ledger-text font-body">
-        {children}
-        <ThemeToggle />
+        <LanguageProvider>
+          {children}
+          <ThemeToggle />
+          <LanguageToggle />
+        </LanguageProvider>
       </body>
     </html>
   );

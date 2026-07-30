@@ -1,13 +1,14 @@
 "use client";
-
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
+import { useLanguage } from "@/lib/LanguageContext";
 import { LogOut } from "lucide-react";
 
 export function UserMenu() {
   const supabase = createClient();
   const router = useRouter();
+  const { t } = useLanguage();
   const [email, setEmail] = useState<string | null>(null);
 
   useEffect(() => {
@@ -30,7 +31,7 @@ export function UserMenu() {
         className="flex items-center gap-1.5 text-xs text-ledger-muted hover:text-ledger-slate-soft transition-colors rounded-md border border-ledger-line px-3 py-1.5"
       >
         <LogOut size={13} />
-        Sign out
+        {t("signOut")}
       </button>
     </div>
   );

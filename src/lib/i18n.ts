@@ -1,0 +1,46 @@
+export type Language = "en" | "fil";
+
+export const translations = {
+  en: {
+    appTagline: "Your online tracker buddy",
+    signIn: "Sign in",
+    signUp: "Sign up",
+    email: "Email",
+    password: "Password",
+    pleaseWait: "Please wait…",
+    createAccount: "Create account",
+    accountCreatedMsg: "Account created. Check your email to confirm, then sign in.",
+    dataPrivacyNote: "Your data is private and scoped to your account.",
+    signOut: "Sign out",
+    balance: "Balance",
+    incomeLabel: "Income",
+    expensesLabel: "Expenses",
+    recentEntries: "Recent entries",
+    importCsv: "Import CSV",
+    greetingMorning: "Good morning",
+    greetingAfternoon: "Good afternoon",
+    greetingEvening: "Good evening",
+  },
+  fil: {
+    appTagline: "Ang iyong online tracker buddy",
+    signIn: "Mag-sign in",
+    signUp: "Mag-sign up",
+    email: "Email",
+    password: "Password",
+    pleaseWait: "Sandali lang…",
+    createAccount: "Gumawa ng account",
+    accountCreatedMsg: "Nagawa na ang account. I-check ang email mo para kumpirmahin, tapos mag-sign in.",
+    dataPrivacyNote: "Pribado ang data mo at naka-scope lang sa account mo.",
+    signOut: "Mag-sign out",
+    balance: "Balanse",
+    incomeLabel: "Kita",
+    expensesLabel: "Gastos",
+    recentEntries: "Mga huling entry",
+    importCsv: "Mag-import ng CSV",
+    greetingMorning: "Magandang umaga",
+    greetingAfternoon: "Magandang hapon",
+    greetingEvening: "Magandang gabi",
+  },
+} as const;
+
+export type TranslationKey = keyof (typeof translations)["en"];
