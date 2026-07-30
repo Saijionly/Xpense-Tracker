@@ -76,3 +76,10 @@ export interface Wallet {
   id: string;
   name: string;
 }
+
+export interface Profile {
+  id: string;
+  fullName: string | null;
+  avatarUrl: string | null;
+  email: string | null;
+}
