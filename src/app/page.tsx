@@ -11,6 +11,7 @@ import { TransactionFilters, DateRangeOption } from "@/components/TransactionFil
 import { CategoryChart } from "@/components/CategoryChart";
 import { TrendsChart } from "@/components/TrendsChart";
 import { InsightsPanel } from "@/components/InsightsPanel";
+import { ForecastPanel } from "@/components/ForecastPanel";
 import { RecapPanel } from "@/components/RecapPanel";
 import { BudgetPanel } from "@/components/BudgetPanel";
 import { BudgetAlerts } from "@/components/BudgetAlerts";
@@ -150,6 +151,7 @@ export default function Home() {
             <TransactionForm onAdd={addTransaction} />
             <RecapPanel transactions={transactions} />
             <InsightsPanel transactions={transactions} />
+            <ForecastPanel transactions={transactions} />
             <SavingsGoals />
             <BudgetPanel
               budgets={budgets}
