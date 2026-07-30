@@ -27,6 +27,7 @@ export function useTransactions() {
           currency: row.currency ?? "PHP",
           originalAmount: row.original_amount != null ? Number(row.original_amount) : null,
           exchangeRate: row.exchange_rate != null ? Number(row.exchange_rate) : null,
+          receiptUrl: row.receipt_url ?? null,
         })),
       );
     }
@@ -55,6 +56,7 @@ export function useTransactions() {
         currency: t.currency,
         original_amount: t.originalAmount,
         exchange_rate: t.exchangeRate,
+        receipt_url: t.receiptUrl,
       });
       if (!error) {
         await fetchTransactions();
@@ -76,6 +78,7 @@ export function useTransactions() {
           currency: t.currency,
           original_amount: t.originalAmount,
           exchange_rate: t.exchangeRate,
+          receipt_url: t.receiptUrl,
         })
         .eq("id", id);
       if (!error) {

@@ -9,7 +9,8 @@ import {
   TransactionType,
 } from "@/lib/types";
 import { SUPPORTED_CURRENCIES, CurrencyCode, getExchangeRateToPHP } from "@/lib/currency";
-import { Plus, Loader2 } from "lucide-react";
+import { uploadReceipt } from "@/lib/receipts";
+import { Plus, Loader2, Paperclip, X } from "lucide-react";
 
 interface TransactionFormProps {
   onAdd: (t: Omit<Transaction, "id" | "createdAt">) => void;
@@ -22,7 +23,9 @@ export function TransactionForm({ onAdd }: TransactionFormProps) {
   const [category, setCategory] = useState<Category>("Food");
   const [note, setNote] = useState("");
   const [date, setDate] = useState(() => new Date().toISOString().slice(0, 10));
-  const [converting, setConverting] = useState(false);
+  const [receiptFile, setReceiptFile] = useState<File | null>(null);
+  const [receiptPreview, setReceiptPreview] = useState<string | null>(null);
+  const [submitting, setSubmitting] = useState(false);
 
   const categoryOptions = type === "expense" ? EXPENSE_CATEGORIES : INCOME_CATEGORIES;
 
@@ -31,13 +34,31 @@ export function TransactionForm({ onAdd }: TransactionFormProps) {
     setCategory(next === "expense" ? EXPENSE_CATEGORIES[0] : INCOME_CATEGORIES[0]);
   }
 
+  function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setReceiptFile(file);
+    setReceiptPreview(URL.createObjectURL(file));
+  }
+
+  function clearReceipt() {
+    setReceiptFile(null);
+    if (receiptPreview) URL.revokeObjectURL(receiptPreview);
+    setReceiptPreview(null);
+  }
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     const numeric = parseFloat(amount);
     if (!numeric || numeric <= 0) return;
 
-    setConverting(true);
+    setSubmitting(true);
     try {
+      let receiptUrl: string | null = null;
+      if (receiptFile) {
+        receiptUrl = await uploadReceipt(receiptFile);
+      }
+
       if (currency === "PHP") {
         onAdd({
           type,
@@ -48,6 +69,7 @@ export function TransactionForm({ onAdd }: TransactionFormProps) {
           currency: "PHP",
           originalAmount: null,
           exchangeRate: null,
+          receiptUrl,
         });
       } else {
         const rate = await getExchangeRateToPHP(currency);
@@ -61,13 +83,15 @@ export function TransactionForm({ onAdd }: TransactionFormProps) {
           currency,
           originalAmount: numeric,
           exchangeRate: rate,
+          receiptUrl,
         });
       }
       setAmount("");
       setNote("");
       setCurrency("PHP");
+      clearReceipt();
     } finally {
-      setConverting(false);
+      setSubmitting(false);
     }
   }
 
@@ -166,7 +190,7 @@ export function TransactionForm({ onAdd }: TransactionFormProps) {
         </select>
       </div>
 
-      <div className="mb-4">
+      <div className="mb-3">
         <label className="block text-xs text-ledger-muted mb-1">Note (optional)</label>
         <input
           type="text"
@@ -177,15 +201,42 @@ export function TransactionForm({ onAdd }: TransactionFormProps) {
         />
       </div>
 
+      <div className="mb-4">
+        <label className="block text-xs text-ledger-muted mb-1">Receipt (optional)</label>
+        {receiptPreview ? (
+          <div className="relative inline-block">
+            <img
+              src={receiptPreview}
+              alt="Receipt preview"
+              className="h-20 w-20 object-cover rounded-md border border-ledger-line"
+            />
+            <button
+              type="button"
+              onClick={clearReceipt}
+              className="absolute -top-1.5 -right-1.5 bg-ledger-bg border border-ledger-line rounded-full p-0.5 text-ledger-muted hover:text-ledger-slate-soft"
+              aria-label="Remove receipt"
+            >
+              <X size={12} />
+            </button>
+          </div>
+        ) : (
+          <label className="flex items-center gap-2 rounded-md border border-dashed border-ledger-line px-3 py-2 text-xs text-ledger-muted cursor-pointer hover:border-ledger-gold/60 hover:text-ledger-text transition-colors w-fit">
+            <Paperclip size={13} />
+            Attach photo
+            <input type="file" accept="image/*" onChange={handleFileChange} className="hidden" />
+          </label>
+        )}
+      </div>
+
       <button
         type="submit"
-        disabled={converting}
+        disabled={submitting}
         className="w-full flex items-center justify-center gap-2 rounded-md bg-ledger-gold text-ledger-bg font-medium py-2.5 text-sm hover:bg-ledger-gold-soft transition-colors disabled:opacity-60"
       >
-        {converting ? (
+        {submitting ? (
           <>
             <Loader2 size={16} className="animate-spin" />
-            Converting…
+            Saving…
           </>
         ) : (
           <>

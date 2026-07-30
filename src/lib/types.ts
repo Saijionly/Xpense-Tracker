@@ -36,6 +36,7 @@ export interface Transaction {
   currency: string; // original currency, e.g. "USD"
   originalAmount: number | null; // original amount before conversion (null if PHP)
   exchangeRate: number | null; // rate used at time of entry (null if PHP)
+  receiptUrl: string | null; // public URL of uploaded receipt photo
 }
 
 export interface Budget {

@@ -46,7 +46,7 @@ export function EditTransactionModal({ transaction, onClose, onSave }: EditTrans
     e.preventDefault();
     const numeric = parseFloat(amount);
     if (!numeric || numeric <= 0) return;
-    onSave(transaction!.id, {
+   onSave(transaction!.id, {
       type,
       amount: numeric,
       category,
@@ -55,7 +55,8 @@ export function EditTransactionModal({ transaction, onClose, onSave }: EditTrans
       currency: transaction!.currency,
       originalAmount: transaction!.originalAmount,
       exchangeRate: transaction!.exchangeRate,
-    });
+      receiptUrl: transaction!.receiptUrl,
+});
     onClose();
   }
 
