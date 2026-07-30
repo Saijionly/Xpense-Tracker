@@ -1,14 +1,15 @@
 "use client";
 
 import { Transaction } from "@/lib/types";
-import { Trash2 } from "lucide-react";
+import { Trash2, Pencil } from "lucide-react";
 
 interface TransactionListProps {
   transactions: Transaction[];
   onDelete: (id: string) => void;
+  onEdit: (t: Transaction) => void;
 }
 
-export function TransactionList({ transactions, onDelete }: TransactionListProps) {
+export function TransactionList({ transactions, onDelete, onEdit }: TransactionListProps) {
   if (transactions.length === 0) {
     return (
       <div className="rounded-lg border border-ledger-line bg-ledger-surface p-8 text-center">
@@ -56,6 +57,13 @@ export function TransactionList({ transactions, onDelete }: TransactionListProps
                 {t.type === "income" ? "+" : "−"}
                 {t.amount.toLocaleString("en-PH", { minimumFractionDigits: 2 })}
               </span>
+              <button
+                onClick={() => onEdit(t)}
+                className="opacity-0 group-hover:opacity-100 text-ledger-muted hover:text-ledger-gold-soft transition-opacity"
+                aria-label="Edit entry"
+              >
+                <Pencil size={15} />
+              </button>
               <button
                 onClick={() => onDelete(t.id)}
                 className="opacity-0 group-hover:opacity-100 text-ledger-muted hover:text-ledger-slate-soft transition-opacity"
