@@ -7,6 +7,7 @@ import {
   Category,
   Transaction,
   TransactionType,
+  Wallet,
 } from "@/lib/types";
 import { SUPPORTED_CURRENCIES, CurrencyCode, getExchangeRateToPHP } from "@/lib/currency";
 import { uploadReceipt } from "@/lib/receipts";
@@ -16,9 +17,10 @@ import { Plus, Loader2, Paperclip, X, Zap } from "lucide-react";
 
 interface TransactionFormProps {
   onAdd: (t: Omit<Transaction, "id" | "createdAt">) => void;
+  wallets: Wallet[];
 }
 
-export function TransactionForm({ onAdd }: TransactionFormProps) {
+export function TransactionForm({ onAdd, wallets }: TransactionFormProps) {
   const [type, setType] = useState<TransactionType>("expense");
   const [amount, setAmount] = useState("");
   const [currency, setCurrency] = useState<CurrencyCode>("PHP");
@@ -26,6 +28,7 @@ export function TransactionForm({ onAdd }: TransactionFormProps) {
   const [note, setNote] = useState("");
   const [date, setDate] = useState(() => new Date().toISOString().slice(0, 10));
   const [tags, setTags] = useState<string[]>([]);
+  const [walletId, setWalletId] = useState<string>("");
   const [receiptFile, setReceiptFile] = useState<File | null>(null);
   const [receiptPreview, setReceiptPreview] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
@@ -81,6 +84,8 @@ export function TransactionForm({ onAdd }: TransactionFormProps) {
         receiptUrl = await uploadReceipt(receiptFile);
       }
 
+      const resolvedWalletId = walletId || null;
+
       if (currency === "PHP") {
         onAdd({
           type,
@@ -93,6 +98,7 @@ export function TransactionForm({ onAdd }: TransactionFormProps) {
           exchangeRate: null,
           receiptUrl,
           tags,
+          walletId: resolvedWalletId,
         });
       } else {
         const rate = await getExchangeRateToPHP(currency);
@@ -108,6 +114,7 @@ export function TransactionForm({ onAdd }: TransactionFormProps) {
           exchangeRate: rate,
           receiptUrl,
           tags,
+          walletId: resolvedWalletId,
         });
       }
       setAmount("");
@@ -226,19 +233,36 @@ export function TransactionForm({ onAdd }: TransactionFormProps) {
         </p>
       )}
 
-      <div className="mb-3">
-        <label className="block text-xs text-ledger-muted mb-1">Category</label>
-        <select
-          value={category}
-          onChange={(e) => setCategory(e.target.value as Category)}
-          className="w-full rounded-md bg-ledger-surface-2 border border-ledger-line px-3 py-2 text-sm text-ledger-text focus:outline-none focus:border-ledger-gold/60"
-        >
-          {categoryOptions.map((c) => (
-            <option key={c} value={c}>
-              {c}
-            </option>
-          ))}
-        </select>
+      <div className="grid grid-cols-2 gap-3 mb-3">
+        <div>
+          <label className="block text-xs text-ledger-muted mb-1">Category</label>
+          <select
+            value={category}
+            onChange={(e) => setCategory(e.target.value as Category)}
+            className="w-full rounded-md bg-ledger-surface-2 border border-ledger-line px-3 py-2 text-sm text-ledger-text focus:outline-none focus:border-ledger-gold/60"
+          >
+            {categoryOptions.map((c) => (
+              <option key={c} value={c}>
+                {c}
+              </option>
+            ))}
+          </select>
+        </div>
+        <div>
+          <label className="block text-xs text-ledger-muted mb-1">Wallet (optional)</label>
+          <select
+            value={walletId}
+            onChange={(e) => setWalletId(e.target.value)}
+            className="w-full rounded-md bg-ledger-surface-2 border border-ledger-line px-3 py-2 text-sm text-ledger-text focus:outline-none focus:border-ledger-gold/60"
+          >
+            <option value="">None</option>
+            {wallets.map((w) => (
+              <option key={w.id} value={w.id}>
+                {w.name}
+              </option>
+            ))}
+          </select>
+        </div>
       </div>
 
       <div className="mb-3">

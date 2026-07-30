@@ -17,6 +17,9 @@ interface TransactionFiltersProps {
   onCustomStartChange: (v: string) => void;
   customEnd: string;
   onCustomEndChange: (v: string) => void;
+  wallets: { id: string; name: string }[];
+  walletFilter: string;
+  onWalletFilterChange: (v: string) => void;
   onClear: () => void;
   hasActiveFilters: boolean;
 }
@@ -34,6 +37,9 @@ export function TransactionFilters({
   onCustomStartChange,
   customEnd,
   onCustomEndChange,
+  wallets,
+  walletFilter,
+  onWalletFilterChange,
   onClear,
   hasActiveFilters,
 }: TransactionFiltersProps) {
@@ -84,6 +90,20 @@ export function TransactionFilters({
           <option value="thisMonth">This month</option>
           <option value="custom">Custom range</option>
         </select>
+        {wallets.length > 0 && (
+          <select
+            value={walletFilter}
+            onChange={(e) => onWalletFilterChange(e.target.value)}
+            className="rounded-md bg-ledger-surface-2 border border-ledger-line px-3 py-1.5 text-xs text-ledger-text focus:outline-none focus:border-ledger-gold/60"
+          >
+            <option value="All">All wallets</option>
+            {wallets.map((w) => (
+              <option key={w.id} value={w.id}>
+                {w.name}
+              </option>
+            ))}
+          </select>
+        )}
         {hasActiveFilters && (
           <button
             onClick={onClear}

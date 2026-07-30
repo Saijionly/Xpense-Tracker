@@ -4,6 +4,7 @@ import { useTransactions } from "@/lib/useTransactions";
 import { useBudgets } from "@/lib/useBudgets";
 import { useRecurring } from "@/lib/useRecurring";
 import { useDebts } from "@/lib/useDebts";
+import { useWallets } from "@/lib/useWallets";
 import { useLanguage } from "@/lib/LanguageContext";
 import { SummaryCard } from "@/components/SummaryCard";
 import { TransactionForm } from "@/components/TransactionForm";
@@ -20,6 +21,7 @@ import { RecurringReminders } from "@/components/RecurringReminders";
 import { SavingsGoals } from "@/components/SavingsGoals";
 import { RecurringPanel } from "@/components/RecurringPanel";
 import { DebtTracker } from "@/components/DebtTracker";
+import { WalletManager } from "@/components/WalletManager";
 import { UserMenu } from "@/components/UserMenu";
 import { EditTransactionModal } from "@/components/EditTransactionModal";
 import { ImportCSVModal } from "@/components/ImportCSVModal";
@@ -34,6 +36,7 @@ export default function Home() {
   const { recurring, addRecurring, deleteRecurring, loaded: recurringLoaded } =
     useRecurring(refetch);
   const { debts, addDebt, addPayment, deleteDebt, loaded: debtsLoaded } = useDebts();
+  const { wallets, addWallet, deleteWallet, loaded: walletsLoaded } = useWallets();
   const { t } = useLanguage();
   const [editingTransaction, setEditingTransaction] = useState<Transaction | null>(null);
   const [showImportModal, setShowImportModal] = useState(false);
@@ -44,6 +47,7 @@ export default function Home() {
   const [dateRange, setDateRange] = useState<DateRangeOption>("all");
   const [customStart, setCustomStart] = useState("");
   const [customEnd, setCustomEnd] = useState("");
+  const [walletFilter, setWalletFilter] = useState<string>("All");
 
   const { income, expenses, balance } = useMemo(() => {
     const income = transactions
@@ -73,6 +77,7 @@ export default function Home() {
         t.category.toLowerCase().includes(search.toLowerCase());
       const matchesCategory = categoryFilter === "All" || t.category === categoryFilter;
       const matchesType = typeFilter === "All" || t.type === typeFilter;
+      const matchesWallet = walletFilter === "All" || t.walletId === walletFilter;
 
       let matchesDate = true;
       const tDate = new Date(t.date);
@@ -92,15 +97,16 @@ export default function Home() {
         }
       }
 
-      return matchesSearch && matchesCategory && matchesType && matchesDate;
+      return matchesSearch && matchesCategory && matchesType && matchesDate && matchesWallet;
     });
-  }, [transactions, search, categoryFilter, typeFilter, dateRange, customStart, customEnd]);
+  }, [transactions, search, categoryFilter, typeFilter, dateRange, customStart, customEnd, walletFilter]);
 
   const hasActiveFilters =
     search.trim() !== "" ||
     categoryFilter !== "All" ||
     typeFilter !== "All" ||
-    dateRange !== "all";
+    dateRange !== "all" ||
+    walletFilter !== "All";
 
   function clearFilters() {
     setSearch("");
@@ -109,9 +115,10 @@ export default function Home() {
     setDateRange("all");
     setCustomStart("");
     setCustomEnd("");
+    setWalletFilter("All");
   }
 
-  if (!loaded || !budgetsLoaded || !recurringLoaded || !debtsLoaded) {
+  if (!loaded || !budgetsLoaded || !recurringLoaded || !debtsLoaded || !walletsLoaded) {
     return null;
   }
 
@@ -151,11 +158,17 @@ export default function Home() {
         </div>
         <div className="grid grid-cols-1 lg:grid-cols-[1fr_1.4fr] gap-6">
           <div className="space-y-6">
-            <TransactionForm onAdd={addTransaction} />
+            <TransactionForm onAdd={addTransaction} wallets={wallets} />
             <RecapPanel transactions={transactions} />
             <InsightsPanel transactions={transactions} />
             <ForecastPanel transactions={transactions} />
             <SavingsGoals />
+            <WalletManager
+              wallets={wallets}
+              transactions={transactions}
+              onAdd={addWallet}
+              onDelete={deleteWallet}
+            />
             <BudgetPanel
               budgets={budgets}
               transactions={transactions}
@@ -167,7 +180,7 @@ export default function Home() {
               onAdd={addRecurring}
               onDelete={deleteRecurring}
             />
-             <DebtTracker
+            <DebtTracker
               debts={debts}
               onAdd={addDebt}
               onPay={addPayment}
@@ -201,6 +214,9 @@ export default function Home() {
               onCustomStartChange={setCustomStart}
               customEnd={customEnd}
               onCustomEndChange={setCustomEnd}
+              wallets={wallets}
+              walletFilter={walletFilter}
+              onWalletFilterChange={setWalletFilter}
               onClear={clearFilters}
               hasActiveFilters={hasActiveFilters}
             />
@@ -208,6 +224,7 @@ export default function Home() {
               transactions={filteredTransactions}
               onDelete={deleteTransaction}
               onEdit={setEditingTransaction}
+              wallets={wallets}
             />
           </div>
         </div>
@@ -224,6 +241,7 @@ export default function Home() {
         transaction={editingTransaction}
         onClose={() => setEditingTransaction(null)}
         onSave={updateTransaction}
+        wallets={wallets}
       />
 
       <ImportCSVModal

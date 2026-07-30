@@ -7,6 +7,7 @@ import {
   Category,
   Transaction,
   TransactionType,
+  Wallet,
 } from "@/lib/types";
 import { TagInput } from "@/components/TagInput";
 import { X } from "lucide-react";
@@ -15,15 +16,17 @@ interface EditTransactionModalProps {
   transaction: Transaction | null;
   onClose: () => void;
   onSave: (id: string, t: Omit<Transaction, "id" | "createdAt">) => void;
+  wallets: Wallet[];
 }
 
-export function EditTransactionModal({ transaction, onClose, onSave }: EditTransactionModalProps) {
+export function EditTransactionModal({ transaction, onClose, onSave, wallets }: EditTransactionModalProps) {
   const [type, setType] = useState<TransactionType>("expense");
   const [amount, setAmount] = useState("");
   const [category, setCategory] = useState<Category>("Food");
   const [note, setNote] = useState("");
   const [date, setDate] = useState("");
   const [tags, setTags] = useState<string[]>([]);
+  const [walletId, setWalletId] = useState<string>("");
 
   const categoryOptions = type === "expense" ? EXPENSE_CATEGORIES : INCOME_CATEGORIES;
 
@@ -35,6 +38,7 @@ export function EditTransactionModal({ transaction, onClose, onSave }: EditTrans
       setNote(transaction.note);
       setDate(transaction.date);
       setTags(transaction.tags ?? []);
+      setWalletId(transaction.walletId ?? "");
     }
   }, [transaction]);
 
@@ -60,6 +64,7 @@ export function EditTransactionModal({ transaction, onClose, onSave }: EditTrans
       exchangeRate: transaction!.exchangeRate,
       receiptUrl: transaction!.receiptUrl,
       tags,
+      walletId: walletId || null,
     });
     onClose();
   }
@@ -139,19 +144,36 @@ export function EditTransactionModal({ transaction, onClose, onSave }: EditTrans
             </div>
           </div>
 
-          <div className="mb-3">
-            <label className="block text-xs text-ledger-muted mb-1">Category</label>
-            <select
-              value={category}
-              onChange={(e) => setCategory(e.target.value as Category)}
-              className="w-full rounded-md bg-ledger-surface-2 border border-ledger-line px-3 py-2 text-sm text-ledger-text focus:outline-none focus:border-ledger-gold/60"
-            >
-              {categoryOptions.map((c) => (
-                <option key={c} value={c}>
-                  {c}
-                </option>
-              ))}
-            </select>
+          <div className="grid grid-cols-2 gap-3 mb-3">
+            <div>
+              <label className="block text-xs text-ledger-muted mb-1">Category</label>
+              <select
+                value={category}
+                onChange={(e) => setCategory(e.target.value as Category)}
+                className="w-full rounded-md bg-ledger-surface-2 border border-ledger-line px-3 py-2 text-sm text-ledger-text focus:outline-none focus:border-ledger-gold/60"
+              >
+                {categoryOptions.map((c) => (
+                  <option key={c} value={c}>
+                    {c}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label className="block text-xs text-ledger-muted mb-1">Wallet</label>
+              <select
+                value={walletId}
+                onChange={(e) => setWalletId(e.target.value)}
+                className="w-full rounded-md bg-ledger-surface-2 border border-ledger-line px-3 py-2 text-sm text-ledger-text focus:outline-none focus:border-ledger-gold/60"
+              >
+                <option value="">None</option>
+                {wallets.map((w) => (
+                  <option key={w.id} value={w.id}>
+                    {w.name}
+                  </option>
+                ))}
+              </select>
+            </div>
           </div>
 
           <div className="mb-3">

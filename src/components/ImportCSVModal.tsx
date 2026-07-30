@@ -47,6 +47,7 @@ export function ImportCSVModal({ open, onClose, onImport }: ImportCSVModalProps)
         exchangeRate: null,
         receiptUrl: null,
         tags: [],
+        walletId: null,
       });
     }
     setImporting(false);

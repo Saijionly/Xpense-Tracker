@@ -1,16 +1,22 @@
 "use client";
 import { useState } from "react";
-import { Transaction } from "@/lib/types";
+import { Transaction, Wallet } from "@/lib/types";
 import { Trash2, Pencil, Receipt } from "lucide-react";
 
 interface TransactionListProps {
   transactions: Transaction[];
   onDelete: (id: string) => void;
   onEdit: (t: Transaction) => void;
+  wallets: Wallet[];
 }
 
-export function TransactionList({ transactions, onDelete, onEdit }: TransactionListProps) {
+export function TransactionList({ transactions, onDelete, onEdit, wallets }: TransactionListProps) {
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+
+  function walletName(id: string | null) {
+    if (!id) return null;
+    return wallets.find((w) => w.id === id)?.name ?? null;
+  }
 
   if (transactions.length === 0) {
     return (
@@ -65,6 +71,7 @@ export function TransactionList({ transactions, onDelete, onEdit }: TransactionL
                         day: "numeric",
                         year: "numeric",
                       })}
+                      {walletName(t.walletId) && ` · ${walletName(t.walletId)}`}
                     </span>
                     {t.tags && t.tags.length > 0 && (
                       <span className="flex items-center gap-1">
@@ -92,7 +99,7 @@ export function TransactionList({ transactions, onDelete, onEdit }: TransactionL
                 </span>
                 <button
                   onClick={() => onEdit(t)}
-                  className="opacity-0 group-hover:opacity-100 text-ledger-muted hover:text-ledger-gold-soft transition-opacity"
+                  className="text-ledger-muted hover:text-ledger-gold-soft transition-colors"
                   aria-label="Edit entry"
                 >
                   <Pencil size={15} />
