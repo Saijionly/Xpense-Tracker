@@ -10,14 +10,17 @@ import { TransactionFilters, DateRangeOption } from "@/components/TransactionFil
 import { CategoryChart } from "@/components/CategoryChart";
 import { TrendsChart } from "@/components/TrendsChart";
 import { InsightsPanel } from "@/components/InsightsPanel";
+import { RecapPanel } from "@/components/RecapPanel";
 import { BudgetPanel } from "@/components/BudgetPanel";
 import { BudgetAlerts } from "@/components/BudgetAlerts";
+import { RecurringReminders } from "@/components/RecurringReminders";
 import { SavingsGoals } from "@/components/SavingsGoals";
 import { RecurringPanel } from "@/components/RecurringPanel";
 import { UserMenu } from "@/components/UserMenu";
 import { EditTransactionModal } from "@/components/EditTransactionModal";
+import { ImportCSVModal } from "@/components/ImportCSVModal";
 import { Category, Transaction, TransactionType } from "@/lib/types";
-import { Wallet, TrendingUp, TrendingDown } from "lucide-react";
+import { Wallet, TrendingUp, TrendingDown, Upload } from "lucide-react";
 
 export default function Home() {
   const { transactions, addTransaction, updateTransaction, deleteTransaction, loaded, refetch } =
@@ -26,6 +29,7 @@ export default function Home() {
   const { recurring, addRecurring, deleteRecurring, loaded: recurringLoaded } =
     useRecurring(refetch);
   const [editingTransaction, setEditingTransaction] = useState<Transaction | null>(null);
+  const [showImportModal, setShowImportModal] = useState(false);
 
   const [search, setSearch] = useState("");
   const [categoryFilter, setCategoryFilter] = useState<Category | "All">("All");
@@ -47,7 +51,6 @@ export default function Home() {
   const filteredTransactions = useMemo(() => {
     const now = new Date();
 
-    // Start of this week (Monday)
     const dayOfWeek = now.getDay();
     const diffToMonday = dayOfWeek === 0 ? 6 : dayOfWeek - 1;
     const startOfWeek = new Date(now);
@@ -133,6 +136,7 @@ export default function Home() {
       </header>
       <main className="mx-auto max-w-5xl px-6 py-8">
         <BudgetAlerts budgets={budgets} transactions={transactions} />
+        <RecurringReminders recurring={recurring} />
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
           <SummaryCard label="Balance" amount={balance} icon={Wallet} accent="text" />
           <SummaryCard label="Income" amount={income} icon={TrendingUp} accent="gold" />
@@ -141,6 +145,7 @@ export default function Home() {
         <div className="grid grid-cols-1 lg:grid-cols-[1fr_1.4fr] gap-6">
           <div className="space-y-6">
             <TransactionForm onAdd={addTransaction} />
+            <RecapPanel transactions={transactions} />
             <InsightsPanel transactions={transactions} />
             <SavingsGoals />
             <BudgetPanel
@@ -158,9 +163,17 @@ export default function Home() {
             <TrendsChart transactions={transactions} />
           </div>
           <div>
-            <h2 className="font-display text-sm font-semibold uppercase tracking-wider text-ledger-muted mb-3">
-              Recent entries
-            </h2>
+            <div className="flex items-center justify-between mb-3">
+              <h2 className="font-display text-sm font-semibold uppercase tracking-wider text-ledger-muted">
+                Recent entries
+              </h2>
+              <button
+                onClick={() => setShowImportModal(true)}
+                className="flex items-center gap-1 text-xs text-ledger-muted hover:text-ledger-gold-soft transition-colors"
+              >
+                <Upload size={12} /> Import CSV
+              </button>
+            </div>
             <TransactionFilters
               search={search}
               onSearchChange={setSearch}
@@ -197,6 +210,12 @@ export default function Home() {
         transaction={editingTransaction}
         onClose={() => setEditingTransaction(null)}
         onSave={updateTransaction}
+      />
+
+      <ImportCSVModal
+        open={showImportModal}
+        onClose={() => setShowImportModal(false)}
+        onImport={addTransaction}
       />
     </div>
   );

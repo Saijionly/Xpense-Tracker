@@ -10,7 +10,8 @@ import {
 } from "@/lib/types";
 import { SUPPORTED_CURRENCIES, CurrencyCode, getExchangeRateToPHP } from "@/lib/currency";
 import { uploadReceipt } from "@/lib/receipts";
-import { Plus, Loader2, Paperclip, X } from "lucide-react";
+import { parseQuickAdd } from "@/lib/quickAdd";
+import { Plus, Loader2, Paperclip, X, Zap } from "lucide-react";
 
 interface TransactionFormProps {
   onAdd: (t: Omit<Transaction, "id" | "createdAt">) => void;
@@ -26,12 +27,31 @@ export function TransactionForm({ onAdd }: TransactionFormProps) {
   const [receiptFile, setReceiptFile] = useState<File | null>(null);
   const [receiptPreview, setReceiptPreview] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
+  const [quickText, setQuickText] = useState("");
 
   const categoryOptions = type === "expense" ? EXPENSE_CATEGORIES : INCOME_CATEGORIES;
 
   function handleTypeChange(next: TransactionType) {
     setType(next);
     setCategory(next === "expense" ? EXPENSE_CATEGORIES[0] : INCOME_CATEGORIES[0]);
+  }
+
+  function handleQuickAdd() {
+    const parsed = parseQuickAdd(quickText);
+    if (!parsed) return;
+    setType(parsed.type);
+    setAmount(String(parsed.amount));
+    setCategory(parsed.category);
+    setNote(parsed.note);
+    setCurrency("PHP");
+    setQuickText("");
+  }
+
+  function handleQuickKeyDown(e: React.KeyboardEvent<HTMLInputElement>) {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      handleQuickAdd();
+    }
   }
 
   function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
@@ -103,6 +123,32 @@ export function TransactionForm({ onAdd }: TransactionFormProps) {
       <h2 className="font-display text-sm font-semibold uppercase tracking-wider text-ledger-muted mb-4">
         New entry
       </h2>
+
+      <div className="mb-4">
+        <div className="flex gap-1.5">
+          <div className="relative flex-1">
+            <Zap size={13} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-ledger-muted" />
+            <input
+              type="text"
+              value={quickText}
+              onChange={(e) => setQuickText(e.target.value)}
+              onKeyDown={handleQuickKeyDown}
+              placeholder="Quick add: e.g. 300 grocery"
+              className="w-full rounded-md bg-ledger-surface-2 border border-ledger-line pl-8 pr-2 py-1.5 text-xs text-ledger-text placeholder:text-ledger-muted/50 focus:outline-none focus:border-ledger-gold/60"
+            />
+          </div>
+          <button
+            type="button"
+            onClick={handleQuickAdd}
+            className="rounded-md bg-ledger-surface-2 border border-ledger-line px-3 text-xs text-ledger-muted hover:text-ledger-gold-soft hover:border-ledger-gold/60 transition-colors"
+          >
+            Fill
+          </button>
+        </div>
+        <p className="text-[10px] text-ledger-muted mt-1">
+          Type amount + keyword, press Enter to auto-fill the fields below.
+        </p>
+      </div>
 
       <div className="flex gap-2 mb-4">
         <button
