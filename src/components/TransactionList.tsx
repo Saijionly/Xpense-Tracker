@@ -99,7 +99,7 @@ export function TransactionList({ transactions, onDelete, onEdit }: TransactionL
                 </button>
                 <button
                   onClick={() => onDelete(t.id)}
-                  className="opacity-0 group-hover:opacity-100 text-ledger-muted hover:text-ledger-slate-soft transition-opacity"
+                  className="text-ledger-muted hover:text-ledger-slate-soft transition-colors"
                   aria-label="Delete entry"
                 >
                   <Trash2 size={15} />
