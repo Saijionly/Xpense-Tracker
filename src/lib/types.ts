@@ -26,3 +26,11 @@ export interface Budget {
   category: Category;
   monthlyLimit: number;
 }
+export interface RecurringTransaction {
+  id: string;
+  type: TransactionType;
+  amount: number;
+  category: Category;
+  note: string;
+  nextDueDate: string; // ISO date string (yyyy-mm-dd)
+}

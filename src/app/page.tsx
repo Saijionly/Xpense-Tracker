@@ -1,22 +1,26 @@
 "use client";
-import { useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { useTransactions } from "@/lib/useTransactions";
 import { useBudgets } from "@/lib/useBudgets";
+import { useRecurring } from "@/lib/useRecurring";
 import { SummaryCard } from "@/components/SummaryCard";
 import { TransactionForm } from "@/components/TransactionForm";
 import { TransactionList } from "@/components/TransactionList";
 import { TransactionFilters } from "@/components/TransactionFilters";
 import { CategoryChart } from "@/components/CategoryChart";
 import { BudgetPanel } from "@/components/BudgetPanel";
+import { RecurringPanel } from "@/components/RecurringPanel";
 import { UserMenu } from "@/components/UserMenu";
 import { EditTransactionModal } from "@/components/EditTransactionModal";
 import { Category, Transaction, TransactionType } from "@/lib/types";
 import { Wallet, TrendingUp, TrendingDown } from "lucide-react";
 
 export default function Home() {
-  const { transactions, addTransaction, updateTransaction, deleteTransaction, loaded } =
-    useTransactions();
+  const { transactions, addTransaction, updateTransaction, deleteTransaction, loaded, refetch } =
+    useTransactionsWithRefetch();
   const { budgets, setBudget, deleteBudget, loaded: budgetsLoaded } = useBudgets();
+  const { recurring, addRecurring, deleteRecurring, loaded: recurringLoaded } =
+    useRecurring(refetch);
   const [editingTransaction, setEditingTransaction] = useState<Transaction | null>(null);
 
   const [search, setSearch] = useState("");
@@ -53,7 +57,7 @@ export default function Home() {
     setTypeFilter("All");
   }
 
-  if (!loaded || !budgetsLoaded) {
+  if (!loaded || !budgetsLoaded || !recurringLoaded) {
     return null;
   }
 
@@ -98,6 +102,11 @@ export default function Home() {
               onSet={setBudget}
               onDelete={deleteBudget}
             />
+            <RecurringPanel
+              recurring={recurring}
+              onAdd={addRecurring}
+              onDelete={deleteRecurring}
+            />
             <CategoryChart transactions={transactions} />
           </div>
           <div>
@@ -137,4 +146,12 @@ export default function Home() {
       />
     </div>
   );
+}
+
+function useTransactionsWithRefetch() {
+  const hook = useTransactions();
+  const refetch = useCallback(() => {
+    window.location.reload();
+  }, []);
+  return { ...hook, refetch };
 }
