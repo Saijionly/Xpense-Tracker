@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { CATEGORIES, Category, Transaction, Budget } from "@/lib/types";
+import { EXPENSE_CATEGORIES, Category, Transaction, Budget } from "@/lib/types";
 import { Plus, X, AlertTriangle } from "lucide-react";
 
 interface BudgetPanelProps {
@@ -38,7 +38,7 @@ export function BudgetPanel({ budgets, transactions, onSet, onDelete }: BudgetPa
     setShowForm(false);
   }
 
-  const availableCategories = CATEGORIES.filter(
+  const availableCategories = EXPENSE_CATEGORIES.filter(
     (c) => !budgets.some((b) => b.category === c),
   );
 

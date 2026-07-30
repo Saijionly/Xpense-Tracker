@@ -1,7 +1,13 @@
 "use client";
 
 import { useState } from "react";
-import { CATEGORIES, Category, RecurringTransaction, TransactionType } from "@/lib/types";
+import {
+  EXPENSE_CATEGORIES,
+  INCOME_CATEGORIES,
+  Category,
+  RecurringTransaction,
+  TransactionType,
+} from "@/lib/types";
 import { Plus, X, Repeat } from "lucide-react";
 
 interface RecurringPanelProps {
@@ -19,6 +25,13 @@ export function RecurringPanel({ recurring, onAdd, onDelete }: RecurringPanelPro
   const [nextDueDate, setNextDueDate] = useState(() =>
     new Date().toISOString().slice(0, 10),
   );
+
+  const categoryOptions = type === "expense" ? EXPENSE_CATEGORIES : INCOME_CATEGORIES;
+
+  function handleTypeChange(next: TransactionType) {
+    setType(next);
+    setCategory(next === "expense" ? EXPENSE_CATEGORIES[0] : INCOME_CATEGORIES[0]);
+  }
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -50,7 +63,7 @@ export function RecurringPanel({ recurring, onAdd, onDelete }: RecurringPanelPro
           <div className="flex gap-2">
             <button
               type="button"
-              onClick={() => setType("expense")}
+              onClick={() => handleTypeChange("expense")}
               className={`flex-1 rounded-md py-1.5 text-xs font-medium transition-colors ${
                 type === "expense"
                   ? "bg-ledger-slate/20 text-ledger-slate-soft border border-ledger-slate/40"
@@ -61,7 +74,7 @@ export function RecurringPanel({ recurring, onAdd, onDelete }: RecurringPanelPro
             </button>
             <button
               type="button"
-              onClick={() => setType("income")}
+              onClick={() => handleTypeChange("income")}
               className={`flex-1 rounded-md py-1.5 text-xs font-medium transition-colors ${
                 type === "income"
                   ? "bg-ledger-gold/20 text-ledger-gold-soft border border-ledger-gold/40"
@@ -98,7 +111,7 @@ export function RecurringPanel({ recurring, onAdd, onDelete }: RecurringPanelPro
             onChange={(e) => setCategory(e.target.value as Category)}
             className="w-full rounded-md bg-ledger-surface-2 border border-ledger-line px-2 py-1.5 text-xs text-ledger-text focus:outline-none focus:border-ledger-gold/60"
           >
-            {CATEGORIES.map((c) => (
+            {categoryOptions.map((c) => (
               <option key={c} value={c}>
                 {c}
               </option>

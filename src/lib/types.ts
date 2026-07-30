@@ -1,17 +1,30 @@
 export type TransactionType = "income" | "expense";
-export const CATEGORIES = [
+
+export const EXPENSE_CATEGORIES = [
   "Food",
   "Transport",
   "Bills",
   "Shopping",
   "Health",
   "Entertainment",
-  "Savings",
-  "Salary",
-  "Freelance",
+  "Electronics",
+  "Emergency",
   "Other",
 ] as const;
+
+export const INCOME_CATEGORIES = [
+  "Salary",
+  "Savings",
+  "Income",
+] as const;
+
+export const CATEGORIES = [
+  ...EXPENSE_CATEGORIES,
+  ...INCOME_CATEGORIES,
+] as const;
+
 export type Category = (typeof CATEGORIES)[number];
+
 export interface Transaction {
   id: string;
   type: TransactionType;
