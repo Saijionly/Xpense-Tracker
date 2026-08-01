@@ -4,6 +4,7 @@ import "./globals.css";
 import ThemeToggle from "@/components/ThemeToggle";
 import LanguageToggle from "@/components/LanguageToggle";
 import { LanguageProvider } from "@/lib/LanguageContext";
+import { AppShell } from "@/components/AppShell";
 
 const spaceGrotesk = Space_Grotesk({
   variable: "--font-display",
@@ -50,7 +51,7 @@ export default function RootLayout({
       </head>
       <body className="min-h-full flex flex-col bg-ledger-bg text-ledger-text font-body">
         <LanguageProvider>
-          {children}
+          <AppShell>{children}</AppShell>
           <ThemeToggle />
           <LanguageToggle />
         </LanguageProvider>

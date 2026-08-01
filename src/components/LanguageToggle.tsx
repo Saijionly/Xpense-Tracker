@@ -7,7 +7,7 @@ export default function LanguageToggle() {
   const { language, setLanguage } = useLanguage();
 
   return (
-    <div className="fixed bottom-6 left-6 z-40 flex items-center gap-1 rounded-full border border-ledger-line bg-ledger-surface px-1.5 py-1.5 shadow-lg">
+    <div className="fixed bottom-36 right-5 md:bottom-20 z-40 flex items-center gap-1 rounded-full border border-ledger-line bg-ledger-surface px-1.5 py-1.5 shadow-lg">
       <Languages size={14} className="text-ledger-muted ml-1 mr-0.5" />
       <button
         onClick={() => setLanguage("en")}

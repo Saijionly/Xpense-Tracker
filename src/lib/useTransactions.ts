@@ -103,5 +103,12 @@ export function useTransactions() {
     [supabase],
   );
 
-  return { transactions, addTransaction, updateTransaction, deleteTransaction, loaded };
+  return {
+    transactions,
+    addTransaction,
+    updateTransaction,
+    deleteTransaction,
+    loaded,
+    refetch: fetchTransactions,
+  };
 }

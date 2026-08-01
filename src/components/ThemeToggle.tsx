@@ -25,7 +25,7 @@ export default function ThemeToggle() {
     <button
       onClick={toggleTheme}
       aria-label="Toggle dark/light mode"
-      className="fixed bottom-5 right-5 z-50 flex h-11 w-11 items-center justify-center rounded-full border border-ledger-line bg-ledger-surface text-ledger-text shadow-lg transition hover:border-ledger-gold"
+      className="fixed bottom-20 right-5 md:bottom-5 z-50 flex h-11 w-11 items-center justify-center rounded-full border border-ledger-line bg-ledger-surface text-ledger-text shadow-lg transition hover:border-ledger-gold"
     >
       {isLight ? (
         // moon icon (papalit sa dark)
