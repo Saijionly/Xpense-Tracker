@@ -8,6 +8,7 @@ import { useRecurring } from "@/lib/useRecurring";
 import { useDebts } from "@/lib/useDebts";
 import { useWallets } from "@/lib/useWallets";
 import { useSavingsGoals } from "@/lib/useSavingsGoals";
+import { RecurringTransaction } from "@/lib/types";
 
 interface UserProfile {
   email: string | null;
@@ -27,7 +28,9 @@ interface AppDataContextValue {
 
   recurring: ReturnType<typeof useRecurring>["recurring"];
   addRecurring: ReturnType<typeof useRecurring>["addRecurring"];
+  updateRecurring: (id: string, updates: Omit<RecurringTransaction, "id">) => Promise<void>;
   deleteRecurring: ReturnType<typeof useRecurring>["deleteRecurring"];
+  markRecurringPaid: (item: RecurringTransaction) => Promise<void>;
 
   debts: ReturnType<typeof useDebts>["debts"];
   addDebt: ReturnType<typeof useDebts>["addDebt"];
@@ -142,7 +145,9 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
 
     recurring: recurringHook.recurring,
     addRecurring: recurringHook.addRecurring,
+    updateRecurring: recurringHook.updateRecurring,
     deleteRecurring: recurringHook.deleteRecurring,
+    markRecurringPaid: recurringHook.markAsPaid,
 
     debts: debtsHook.debts,
     addDebt: debtsHook.addDebt,

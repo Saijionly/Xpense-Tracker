@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
-import { RecurringTransaction, Transaction } from "./types";
+import { RecurringTransaction } from "./types";
 
 function addOneMonth(dateStr: string): string {
   const d = new Date(dateStr);
@@ -101,6 +101,26 @@ export function useRecurring(onTransactionAdded: () => void) {
     [supabase, fetchRecurring],
   );
 
+  const updateRecurring = useCallback(
+    async (id: string, updates: Omit<RecurringTransaction, "id">) => {
+      const { error } = await supabase
+        .from("recurring_transactions")
+        .update({
+          type: updates.type,
+          amount: updates.amount,
+          category: updates.category,
+          note: updates.note,
+          next_due_date: updates.nextDueDate,
+        })
+        .eq("id", id);
+
+      if (!error) {
+        await fetchRecurring();
+      }
+    },
+    [supabase, fetchRecurring],
+  );
+
   const deleteRecurring = useCallback(
     async (id: string) => {
       const { error } = await supabase.from("recurring_transactions").delete().eq("id", id);
@@ -111,5 +131,36 @@ export function useRecurring(onTransactionAdded: () => void) {
     [supabase],
   );
 
-  return { recurring, addRecurring, deleteRecurring, loaded };
+  const markAsPaid = useCallback(
+    async (item: RecurringTransaction) => {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+      if (!user) return;
+
+      const { error: insertError } = await supabase.from("transactions").insert({
+        user_id: user.id,
+        type: item.type,
+        amount: item.amount,
+        category: item.category,
+        note: item.note,
+        date: item.nextDueDate,
+      });
+
+      if (insertError) return;
+
+      const { error: updateError } = await supabase
+        .from("recurring_transactions")
+        .update({ next_due_date: addOneMonth(item.nextDueDate) })
+        .eq("id", item.id);
+
+      if (!updateError) {
+        onTransactionAdded();
+        await fetchRecurring();
+      }
+    },
+    [supabase, onTransactionAdded, fetchRecurring],
+  );
+
+  return { recurring, addRecurring, updateRecurring, deleteRecurring, markAsPaid, loaded };
 }

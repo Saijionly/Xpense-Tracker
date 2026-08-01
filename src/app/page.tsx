@@ -35,7 +35,7 @@ export default function DashboardPage() {
   return (
     <div className="px-4 sm:px-6 py-6 max-w-6xl mx-auto">
       <div className="mb-6">
-        <h1 className="font-display text-xl font-semibold tracking-tight text-ledger-text">
+        <h1 className="font-display text-3xl sm:text-4xl font-bold tracking-tight text-ledger-text">
           Dashboard
         </h1>
         <WelcomeGreeting />

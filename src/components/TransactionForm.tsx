@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import {
   EXPENSE_CATEGORIES,
   INCOME_CATEGORIES,
@@ -12,8 +12,9 @@ import {
 import { SUPPORTED_CURRENCIES, CurrencyCode, getExchangeRateToPHP } from "@/lib/currency";
 import { uploadReceipt } from "@/lib/receipts";
 import { parseQuickAdd } from "@/lib/quickAdd";
+import { computePayrollDeductions } from "@/lib/payrollDeductions";
 import { TagInput } from "@/components/TagInput";
-import { Plus, Loader2, Paperclip, X, Zap } from "lucide-react";
+import { Plus, Loader2, Paperclip, X, Zap, Landmark } from "lucide-react";
 
 interface TransactionFormProps {
   onAdd: (t: Omit<Transaction, "id" | "createdAt">) => void;
@@ -33,12 +34,22 @@ export function TransactionForm({ onAdd, wallets }: TransactionFormProps) {
   const [receiptPreview, setReceiptPreview] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [quickText, setQuickText] = useState("");
+  const [autoDeduct, setAutoDeduct] = useState(false);
 
   const categoryOptions = type === "expense" ? EXPENSE_CATEGORIES : INCOME_CATEGORIES;
+  const isSalaryEntry = type === "income" && category === "Salary" && currency === "PHP";
+
+  const deductionPreview = useMemo(() => {
+    if (!isSalaryEntry || !autoDeduct) return null;
+    const numeric = parseFloat(amount);
+    if (!numeric || numeric <= 0) return null;
+    return computePayrollDeductions(numeric);
+  }, [isSalaryEntry, autoDeduct, amount]);
 
   function handleTypeChange(next: TransactionType) {
     setType(next);
     setCategory(next === "expense" ? EXPENSE_CATEGORIES[0] : INCOME_CATEGORIES[0]);
+    setAutoDeduct(false);
   }
 
   function handleQuickAdd() {
@@ -87,7 +98,7 @@ export function TransactionForm({ onAdd, wallets }: TransactionFormProps) {
       const resolvedWalletId = walletId || null;
 
       if (currency === "PHP") {
-        onAdd({
+        await onAdd({
           type,
           amount: numeric,
           category,
@@ -100,10 +111,29 @@ export function TransactionForm({ onAdd, wallets }: TransactionFormProps) {
           tags,
           walletId: resolvedWalletId,
         });
+
+        if (isSalaryEntry && autoDeduct) {
+          const deductions = computePayrollDeductions(numeric);
+          if (deductions.totalDeductions > 0) {
+            await onAdd({
+              type: "expense",
+              amount: deductions.totalDeductions,
+              category: "Bills",
+              note: `Government deductions (SSS ₱${deductions.sss.toLocaleString("en-PH")}, PhilHealth ₱${deductions.philHealth.toLocaleString("en-PH")}, Pag-IBIG ₱${deductions.pagIbig.toLocaleString("en-PH")}, Tax ₱${deductions.withholdingTax.toLocaleString("en-PH")})`,
+              date,
+              currency: "PHP",
+              originalAmount: null,
+              exchangeRate: null,
+              receiptUrl: null,
+              tags: ["auto-deduction"],
+              walletId: resolvedWalletId,
+            });
+          }
+        }
       } else {
         const rate = await getExchangeRateToPHP(currency);
         const converted = numeric * rate;
-        onAdd({
+        await onAdd({
           type,
           amount: converted,
           category,
@@ -121,6 +151,7 @@ export function TransactionForm({ onAdd, wallets }: TransactionFormProps) {
       setNote("");
       setCurrency("PHP");
       setTags([]);
+      setAutoDeduct(false);
       clearReceipt();
     } finally {
       setSubmitting(false);
@@ -264,6 +295,56 @@ export function TransactionForm({ onAdd, wallets }: TransactionFormProps) {
           </select>
         </div>
       </div>
+
+      {isSalaryEntry && (
+        <div className="mb-3 rounded-md border border-ledger-line bg-ledger-surface-2 p-3">
+          <label className="flex items-start gap-2 cursor-pointer">
+            <input
+              type="checkbox"
+              checked={autoDeduct}
+              onChange={(e) => setAutoDeduct(e.target.checked)}
+              className="mt-0.5"
+            />
+            <span className="text-xs text-ledger-text">
+              <span className="flex items-center gap-1.5 font-medium mb-0.5">
+                <Landmark size={13} className="text-ledger-gold-soft" />
+                Auto-deduct SSS, PhilHealth, Pag-IBIG & withholding tax
+              </span>
+              <span className="text-ledger-muted">
+                Adds a separate expense entry for the estimated government deductions.
+              </span>
+            </span>
+          </label>
+
+          {deductionPreview && (
+            <div className="mt-3 pt-3 border-t border-ledger-line space-y-1 text-[11px]">
+              <div className="flex justify-between text-ledger-muted">
+                <span>SSS</span>
+                <span className="tabular font-mono">₱{deductionPreview.sss.toLocaleString("en-PH", { minimumFractionDigits: 2 })}</span>
+              </div>
+              <div className="flex justify-between text-ledger-muted">
+                <span>PhilHealth</span>
+                <span className="tabular font-mono">₱{deductionPreview.philHealth.toLocaleString("en-PH", { minimumFractionDigits: 2 })}</span>
+              </div>
+              <div className="flex justify-between text-ledger-muted">
+                <span>Pag-IBIG</span>
+                <span className="tabular font-mono">₱{deductionPreview.pagIbig.toLocaleString("en-PH", { minimumFractionDigits: 2 })}</span>
+              </div>
+              <div className="flex justify-between text-ledger-muted">
+                <span>Withholding tax</span>
+                <span className="tabular font-mono">₱{deductionPreview.withholdingTax.toLocaleString("en-PH", { minimumFractionDigits: 2 })}</span>
+              </div>
+              <div className="flex justify-between text-ledger-text font-medium pt-1 border-t border-ledger-line">
+                <span>Net pay</span>
+                <span className="tabular font-mono text-ledger-gold-soft">₱{deductionPreview.netPay.toLocaleString("en-PH", { minimumFractionDigits: 2 })}</span>
+              </div>
+              <p className="text-[10px] text-ledger-muted pt-1">
+                Estimate based on 2026 rates — actual payslip may vary slightly.
+              </p>
+            </div>
+          )}
+        </div>
+      )}
 
       <div className="mb-3">
         <label className="block text-xs text-ledger-muted mb-1">Note (optional)</label>

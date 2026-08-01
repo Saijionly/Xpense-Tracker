@@ -4,6 +4,7 @@ import { useAppData } from "@/lib/AppDataContext";
 import { WalletManager } from "@/components/WalletManager";
 import { BudgetPanel } from "@/components/BudgetPanel";
 import { DebtTracker } from "@/components/DebtTracker";
+import { LoanCalculator } from "@/components/LoanCalculator";
 import { RecurringPanel } from "@/components/RecurringPanel";
 import { SavingsGoals } from "@/components/SavingsGoals";
 import { RevealOnScroll } from "@/components/RevealOnScroll";
@@ -19,7 +20,9 @@ export default function AccountsPage() {
     deleteBudget,
     recurring,
     addRecurring,
+    updateRecurring,
     deleteRecurring,
+    markRecurringPaid,
     debts,
     addDebt,
     addPayment,
@@ -59,11 +62,22 @@ export default function AccountsPage() {
             />
           </RevealOnScroll>
           <RevealOnScroll direction="right">
-            <DebtTracker debts={debts} onAdd={addDebt} onPay={addPayment} onDelete={deleteDebt} />
+            <LoanCalculator />
           </RevealOnScroll>
           <div className="lg:col-span-2">
             <RevealOnScroll direction="up">
-              <RecurringPanel recurring={recurring} onAdd={addRecurring} onDelete={deleteRecurring} />
+              <DebtTracker debts={debts} onAdd={addDebt} onPay={addPayment} onDelete={deleteDebt} />
+            </RevealOnScroll>
+          </div>
+          <div className="lg:col-span-2">
+            <RevealOnScroll direction="up">
+              <RecurringPanel
+                recurring={recurring}
+                onAdd={addRecurring}
+                onUpdate={updateRecurring}
+                onDelete={deleteRecurring}
+                onMarkPaid={markRecurringPaid}
+              />
             </RevealOnScroll>
           </div>
         </div>

@@ -1,8 +1,6 @@
 import type { Metadata } from "next";
 import { Space_Grotesk, IBM_Plex_Mono, Inter } from "next/font/google";
 import "./globals.css";
-import ThemeToggle from "@/components/ThemeToggle";
-import LanguageToggle from "@/components/LanguageToggle";
 import { LanguageProvider } from "@/lib/LanguageContext";
 import { AppShell } from "@/components/AppShell";
 
@@ -52,8 +50,6 @@ export default function RootLayout({
       <body className="min-h-full flex flex-col bg-ledger-bg text-ledger-text font-body">
         <LanguageProvider>
           <AppShell>{children}</AppShell>
-          <ThemeToggle />
-          <LanguageToggle />
         </LanguageProvider>
       </body>
     </html>

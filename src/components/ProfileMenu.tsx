@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { useAppData } from "@/lib/AppDataContext";
 import { useLanguage } from "@/lib/LanguageContext";
+import { SettingsModal } from "@/components/SettingsModal";
 import { LogOut, Settings, HelpCircle, Flag, Pencil, Check, X } from "lucide-react";
 
 export function ProfileMenu() {
@@ -16,6 +17,7 @@ export function ProfileMenu() {
   const [open, setOpen] = useState(false);
   const [editingName, setEditingName] = useState(false);
   const [nameInput, setNameInput] = useState(profile.fullName ?? "");
+  const [showSettings, setShowSettings] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -124,7 +126,13 @@ export function ProfileMenu() {
             </label>
           </div>
 
-          <button className="w-full flex items-center gap-2 rounded-md px-2 py-2 text-xs text-ledger-muted hover:bg-ledger-surface-2 hover:text-ledger-text transition-colors">
+          <button
+            onClick={() => {
+              setShowSettings(true);
+              setOpen(false);
+            }}
+            className="w-full flex items-center gap-2 rounded-md px-2 py-2 text-xs text-ledger-muted hover:bg-ledger-surface-2 hover:text-ledger-text transition-colors"
+          >
             <Settings size={14} />
             <span>Settings</span>
           </button>
@@ -154,6 +162,8 @@ export function ProfileMenu() {
           </button>
         </div>
       )}
+
+      <SettingsModal open={showSettings} onClose={() => setShowSettings(false)} />
     </div>
   );
 }
