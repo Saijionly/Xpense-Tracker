@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 import { useAppData } from "@/lib/AppDataContext";
 import { exportTransactionsToCSV } from "@/lib/exportUtils";
 import { ThemeToggleInline } from "@/components/ThemeToggleInline";
@@ -16,8 +17,13 @@ export function SettingsModal({ open, onClose }: SettingsModalProps) {
   const { profile, updateFullName, transactions } = useAppData();
   const [nameInput, setNameInput] = useState(profile.fullName ?? "");
   const [saved, setSaved] = useState(false);
+  const [mounted, setMounted] = useState(false);
 
-  if (!open) return null;
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  if (!open || !mounted) return null;
 
   function handleSaveName() {
     if (nameInput.trim()) {
@@ -27,8 +33,8 @@ export function SettingsModal({ open, onClose }: SettingsModalProps) {
     }
   }
 
-  return (
-    <div className="fixed inset-0 z-50 bg-black/50 overflow-y-auto">
+  const modal = (
+    <div className="fixed inset-0 z-[100] bg-black/50 overflow-y-auto">
       <div className="min-h-full flex items-start justify-center px-4 py-8">
         <div className="w-full max-w-md rounded-lg border border-ledger-line bg-ledger-surface p-5">
           <div className="flex items-center justify-between mb-5">
@@ -95,4 +101,6 @@ export function SettingsModal({ open, onClose }: SettingsModalProps) {
       </div>
     </div>
   );
+
+  return createPortal(modal, document.body);
 }

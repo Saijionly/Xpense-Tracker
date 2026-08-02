@@ -6,7 +6,6 @@ import { LayoutDashboard, ArrowLeftRight, Landmark } from "lucide-react";
 import { ProfileMenu } from "@/components/ProfileMenu";
 import { NotificationBell } from "@/components/NotificationBell";
 import { ThemeToggleInline } from "@/components/ThemeToggleInline";
-import { LanguageToggleInline } from "@/components/LanguageToggleInline";
 
 const NAV_ITEMS = [
   { href: "/", label: "Dashboard", icon: LayoutDashboard },
@@ -50,7 +49,6 @@ export function TopNav() {
 
         <div className="flex items-center gap-1.5 shrink-0">
           <ThemeToggleInline />
-          <LanguageToggleInline />
           <NotificationBell />
           <ProfileMenu />
         </div>

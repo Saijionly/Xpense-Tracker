@@ -1,7 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { createClient } from "@/lib/supabase/client";
+import { useAppData } from "@/lib/AppDataContext";
 import { useLanguage } from "@/lib/LanguageContext";
 
 interface WelcomeGreetingProps {
@@ -9,17 +8,10 @@ interface WelcomeGreetingProps {
 }
 
 export function WelcomeGreeting({ showName = true }: WelcomeGreetingProps) {
-  const supabase = createClient();
+  const { profile } = useAppData();
   const { t } = useLanguage();
-  const [name, setName] = useState<string | null>(null);
 
-  useEffect(() => {
-    if (!showName) return;
-    supabase.auth.getUser().then(({ data }) => {
-      const email = data.user?.email ?? null;
-      setName(email ? email.split("@")[0] : null);
-    });
-  }, [supabase, showName]);
+  const displayName = profile.fullName || profile.email?.split("@")[0] || null;
 
   const hour = new Date().getHours();
   const greetingKey = hour < 12 ? "greetingMorning" : hour < 18 ? "greetingAfternoon" : "greetingEvening";
@@ -27,7 +19,7 @@ export function WelcomeGreeting({ showName = true }: WelcomeGreetingProps) {
   return (
     <p className="text-xs text-ledger-muted mt-0.5">
       {t(greetingKey)}
-      {showName && name ? `, ${name}` : ""}!
+      {showName && displayName ? `, ${displayName}` : ""}!
     </p>
   );
 }

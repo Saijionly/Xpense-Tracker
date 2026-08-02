@@ -36,7 +36,7 @@ export default function AccountsPage() {
     <div className="min-h-full">
       <main className="px-4 sm:px-6 py-6 max-w-6xl mx-auto">
         <div className="mb-6">
-          <h1 className="font-display text-xl font-semibold tracking-tight text-ledger-text">
+          <h1 className="font-display text-3xl sm:text-4xl font-bold tracking-tight text-ledger-text">
             Accounts & Goals
           </h1>
         </div>
@@ -53,22 +53,7 @@ export default function AccountsPage() {
           <RevealOnScroll direction="right">
             <SavingsGoals />
           </RevealOnScroll>
-          <RevealOnScroll direction="left">
-            <BudgetPanel
-              budgets={budgets}
-              transactions={transactions}
-              onSet={setBudget}
-              onDelete={deleteBudget}
-            />
-          </RevealOnScroll>
-          <RevealOnScroll direction="right">
-            <LoanCalculator />
-          </RevealOnScroll>
-          <div className="lg:col-span-2">
-            <RevealOnScroll direction="up">
-              <DebtTracker debts={debts} onAdd={addDebt} onPay={addPayment} onDelete={deleteDebt} />
-            </RevealOnScroll>
-          </div>
+
           <div className="lg:col-span-2">
             <RevealOnScroll direction="up">
               <RecurringPanel
@@ -80,6 +65,24 @@ export default function AccountsPage() {
               />
             </RevealOnScroll>
           </div>
+
+          <div className="lg:col-span-2">
+            <RevealOnScroll direction="up">
+              <DebtTracker debts={debts} onAdd={addDebt} onPay={addPayment} onDelete={deleteDebt} />
+            </RevealOnScroll>
+          </div>
+
+          <RevealOnScroll direction="left">
+            <BudgetPanel
+              budgets={budgets}
+              transactions={transactions}
+              onSet={setBudget}
+              onDelete={deleteBudget}
+            />
+          </RevealOnScroll>
+          <RevealOnScroll direction="right">
+            <LoanCalculator />
+          </RevealOnScroll>
         </div>
       </main>
     </div>
